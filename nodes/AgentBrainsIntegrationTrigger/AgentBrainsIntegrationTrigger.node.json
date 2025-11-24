@@ -1,0 +1,19 @@
+{
+	"node": "n8n-nodes-base.agentBrainsTrigger",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"description": "Integrate your custom n8n workflow with the AgentBrains platform. Create an account and API credentials at https://agent-brains.com/system-integration and use them in n8n to authenticate.",
+	"categories": ["Utility", "Development", "Trigger"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://agent-brains.com/system-integration"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://agent-brains.com/system-integration"
+			}
+		]
+	}
+}

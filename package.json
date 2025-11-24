@@ -1,19 +1,23 @@
 {
-	"name": "n8n-nodes-<...>",
+	"name": "n8n-nodes-agent-brains-trigger",
 	"version": "0.1.0",
-	"description": "",
+	"description": "Custom trigger node for n8n that triggers on events from Agent Brains",
 	"license": "MIT",
 	"homepage": "",
 	"keywords": [
-		"n8n-community-node-package"
+		"n8n-community-node-package",
+		"agent-brains",
+		"trigger",
+		"agent-brains-trigger",
+		"n8n-nodes-agent-brains-trigger"
 	],
 	"author": {
-		"name": "",
-		"email": ""
+		"name": "Vlad Balabash",
+		"email": "vbalabash@agent-brains.com"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/<...>/n8n-nodes-<...>.git"
+		"url": "https://gitlab.od.atncorp.com/datawizard/interfaces-and-gateways/n8n-custom-trigger-node.git"
 	},
 	"scripts": {
 		"build": "n8n-node build",
@@ -31,17 +35,16 @@
 		"n8nNodesApiVersion": 1,
 		"strict": true,
 		"credentials": [
-			"dist/credentials/GithubIssuesApi.credentials.js",
-			"dist/credentials/GithubIssuesOAuth2Api.credentials.js"
+			"dist/credentials/AgentBrainsIntegrationApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/GithubIssues/GithubIssues.node.js",
-			"dist/nodes/Example/Example.node.js"
+			"dist/nodes/AgentBrainsIntegrationTrigger/AgentBrainsIntegrationTrigger.node.js"
 		]
 	},
 	"devDependencies": {
 		"@n8n/node-cli": "*",
 		"eslint": "9.32.0",
+		"express": "^5.1.0",
 		"prettier": "3.6.2",
 		"release-it": "^19.0.4",
 		"typescript": "5.9.2"

@@ -6,15 +6,15 @@ import type {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export class GithubIssuesApi implements ICredentialType {
-	name = 'githubIssuesApi';
+export class AgentBrainsIntegrationApi implements ICredentialType {
+	name = 'agentBrainsIntegrationApi';
 
-	displayName = 'GitHub Issues API';
+	displayName = 'Agent Brains Integration API';
 
-	icon: Icon = { light: 'file:../icons/github.svg', dark: 'file:../icons/github.dark.svg' };
+    icon: Icon = 'file:../icons/agentBrainsIntegration.svg';
 
 	documentationUrl =
-		'https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#deleting-a-personal-access-token';
+		'https://agent-brains.com/system-integration';
 
 	properties: INodeProperties[] = [
 		{
@@ -37,8 +37,8 @@ export class GithubIssuesApi implements ICredentialType {
 
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: 'https://api.github.com',
-			url: '/user',
+			baseURL: 'https://agent-brains.com',
+			url: '/',
 			method: 'GET',
 		},
 	};
