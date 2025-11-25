@@ -32,6 +32,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PUBLISH_EMAIL: ${{ secrets.PUBLISH_EMAIL }}
+      
+      - name: Run npm login
+        run: 'npm login'
 
       - name: Install dependencies
         run: 'npm ci'
