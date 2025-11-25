@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build:
@@ -26,3 +26,8 @@ jobs:
 
       - name: Run build
         run: 'npm run build'
+
+      - name: Publish to github packages
+        run: 'npm publish --registry=https://npm.pkg.github.com'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
