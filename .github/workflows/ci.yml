@@ -27,6 +27,9 @@ jobs:
       - name: Run lint
         run: 'npm run lint'
 
+      - name: Run release
+        run: 'npm run release'
+
       - name: Run build
         run: 'npm run build'
 
@@ -51,6 +54,9 @@ jobs:
         run: 'npm ci'
       - name: Run lint
         run: 'npm run lint'
+      
+      - name: Run release
+        run: 'npm run release'
       - name: Publish to npm
         run: 'npm publish'
         env:
