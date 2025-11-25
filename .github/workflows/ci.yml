@@ -34,7 +34,7 @@ jobs:
         if: ${{ github.ref_type != 'tag' }}
         run: 'npm publish'
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GH_NODE_REGISTRY_AUTH }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-npm:
     name: Publish to npm on tag
