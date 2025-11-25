@@ -23,9 +23,15 @@ jobs:
 
       - name: Configure npm auth for GitHub Packages
         run: |
-          echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" > ~/.npmrc
+          cat > ~/.npmrc <<EOF
+          registry=https://npm.pkg.github.com/
+          _auth="${GITHUB_TOKEN}"
+          email=${PUBLISH_EMAIL}
+          always-auth=true
+          EOF
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISH_EMAIL: ${{ secrets.PUBLISH_EMAIL }}
 
       - name: Install dependencies
         run: 'npm ci'
@@ -56,6 +62,17 @@ jobs:
         with:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
+      - name: Configure npm auth for npm registry
+        run: |
+          cat > ~/.npmrc <<EOF
+          registry=https://registry.npmjs.com/
+          _auth="${NPM_TOKEN}"
+          email=${PUBLISH_EMAIL}
+          always-auth=true
+          EOF
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PUBLISH_EMAIL: ${{ secrets.PUBLISH_EMAIL }}
       - name: Install dependencies
         run: 'npm ci'
       - name: Run lint
