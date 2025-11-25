@@ -34,7 +34,7 @@ jobs:
           PUBLISH_EMAIL: ${{ secrets.PUBLISH_EMAIL }}
       
       - name: Run npm login
-        run: 'npm login'
+        run: 'npm login --registry=https://npm.pkg.github.com/ -e=${PUBLISH_EMAIL} --always-auth=true'
 
       - name: Install dependencies
         run: 'npm ci'
