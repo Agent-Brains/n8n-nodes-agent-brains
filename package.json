@@ -1,16 +1,20 @@
 {
-	"name": "n8n-nodes-agent-brains-trigger",
+	"name": "n8n-nodes-agent-brains",
 	"version": "0.1.0",
-	"description": "Custom trigger node for n8n that triggers on events from Agent Brains",
+  "description": "AgentBrains nodes for n8n to integrate workflows, production webhooks, and Synthetic User validation with the AgentBrains platform.",
 	"license": "MIT",
 	"homepage": "",
-	"keywords": [
-		"n8n-community-node-package",
-		"agent-brains",
-		"trigger",
-		"agent-brains-trigger",
-		"n8n-nodes-agent-brains-trigger"
-	],
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "agent-brains",
+    "agentbrains",
+    "integration",
+    "trigger",
+    "webhook",
+    "synthetic-users",
+    "ai-employees"
+  ],
 	"author": {
 		"name": "Vlad Balabash",
 		"email": "vbalabash@agent-brains.com"
