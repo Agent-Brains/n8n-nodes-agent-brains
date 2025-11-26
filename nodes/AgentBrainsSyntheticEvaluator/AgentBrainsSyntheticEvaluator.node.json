@@ -1,0 +1,19 @@
+{
+  "node": "n8n-nodes-base.agentBrainsSyntheticEvaluator",
+  "nodeVersion": "1.0",
+  "codexVersion": "1.0",
+  "description": "Run synthetic conversations against your n8n agent using Agent Brains synthetic users and evaluate agent behavior.",
+  "categories": ["Utility", "Development", "AI"],
+  "resources": {
+    "credentialDocumentation": [
+      {
+        "url": "https://agent-brains.com/system-integration"
+      }
+    ],
+    "primaryDocumentation": [
+      {
+        "url": "https://agent-brains.com/system-integration"
+      }
+    ]
+  }
+}
