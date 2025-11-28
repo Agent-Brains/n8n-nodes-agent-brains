@@ -24,6 +24,13 @@ app.get('/registered/:workflowId', (req, res) => {
   res.json({ registered: isRegistered });
 });
 
+app.get('/configuration', (req, res) => {
+  res.json({
+    orchestratorStartUrl: 'http://localhost:5678/webhook/ed5ec429-5b66-420b-91ce-e1be079b3fe2',
+    orchestratorStatusUrl: 'http://localhost:5678/webhook/20fab592-bb37-4ae3-bde5-6b7a458e287e',
+  });
+});
+
 app.use((req, res) => {
   res.status(404).json({ status: 'not_found' });
 });

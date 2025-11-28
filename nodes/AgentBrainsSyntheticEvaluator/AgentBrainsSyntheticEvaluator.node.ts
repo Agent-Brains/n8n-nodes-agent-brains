@@ -1,29 +1,66 @@
 
-import type {
-	IExecuteFunctions,
-	ILoadOptionsFunctions,
-	INodeExecutionData,
-	INodeType,
-	INodeTypeDescription,
+import {
+	NodeOperationError,
+	type IExecuteFunctions,
+	type ILoadOptionsFunctions,
+	type INodeExecutionData,
+	type INodeType,
+	type INodeTypeDescription,
 } from 'n8n-workflow';
 
-const API_BASE = 'https://api.agent-brains.com';
+interface ICredentials {
+	accessToken?: string;
+}
 
-const ORCHESTRATOR_START_URL =
-	'http://localhost:5678/webhook/ed5ec429-5b66-420b-91ce-e1be079b3fe2';
+interface ISyntheticUser {
+	id: string;
+	name: string;
+	userWebhookUrl?: string;
+	agentWebhookUrl?: string;
+	initialMessage?: string;
+	role?: string;
+	persona_detail?: string;
+	customerCountry?: string;
+	locale?: string;
+	currency?: string;
+	units?: string;
+}
 
-const ORCHESTRATOR_STATUS_URL =
-	'http://localhost:5678/webhook/20fab592-bb37-4ae3-bde5-6b7a458e287e';
+interface IOrchestratorConfig {
+	orchestratorStartUrl: string;
+	orchestratorStatusUrl: string;
+}
 
-const MAX_WAIT_SECONDS = 900;      // 15 minutes
+interface IStartResponse {
+	jobId?: string;
+}
+
+interface IStatusResponse {
+	state?: string;
+	status?: string;
+	jobId?: string;
+	[key: string]: unknown;
+}
+
+// eslint-disable-next-line
+const API_BASE =
+	process.env.AGENT_BRAINS_API_BASE || 'https://api.agent-brains.com';
+
+const MAX_WAIT_SECONDS = 900; // 15 minutes
 const POLL_INTERVAL_SECONDS = 5;   // 5 seconds
 
 // TS in n8n node template doesn't know about setTimeout by default
 declare function setTimeout(
-	handler: (...args: any[]) => void,
+	handler: (...args: unknown[]) => void,
 	timeout?: number,
-	...args: any[]
-): any;
+	...args: unknown[]
+): unknown;
+
+declare const process: {
+	env: {
+		[key: string]: string | undefined;
+	};
+};
 
 export class AgentBrainsSyntheticEvaluator implements INodeType {
 	methods = {
@@ -31,10 +68,10 @@ export class AgentBrainsSyntheticEvaluator implements INodeType {
 			async getSyntheticUsers(this: ILoadOptionsFunctions) {
 				const credentials = (await this.getCredentials(
 					'agentBrainsIntegrationApi',
-				)) as { accessToken?: string };
+				)) as ICredentials;
 
 				if (!credentials?.accessToken) {
-					throw new Error('No AgentBrains credentials found.');
+					throw new NodeOperationError(this.getNode(), 'No AgentBrains credentials found.');
 				}
 
 				const usersResponse = await this.helpers.httpRequest({
@@ -48,11 +85,11 @@ export class AgentBrainsSyntheticEvaluator implements INodeType {
 
 				// We need to later adjust for our API shape. Assuming:
 				// { users: [{ id: string, name: string }, ...] } or just an array
-				const users = (usersResponse as any).users ?? usersResponse;
+				const users = (usersResponse as { users?: ISyntheticUser[] }).users ?? (usersResponse as ISyntheticUser[]);
 
-				return (users as Array<{ id: string; name: string }>).map((user) => ({
+				return (users as ISyntheticUser[]).map((user) => ({
 					name: user.name, // label in dropdown
-					value: user.id,  // value = synthetic user ID
+					value: user.id, // value = synthetic user ID
 				}));
 			},
 		},
@@ -63,6 +100,7 @@ export class AgentBrainsSyntheticEvaluator implements INodeType {
 		name: 'agentBrainsSyntheticEvaluator',
 		group: ['transform'],
 		version: 1,
+		icon: 'file:../../icons/agentBrainsIntegration.svg',
 		description:
 			'Start a synthetic conversation via the orchestrator using dynamic synthetic users from AgentBrains',
 		defaults: {
@@ -78,15 +116,14 @@ export class AgentBrainsSyntheticEvaluator implements INodeType {
 		outputs: ['main'],
 		properties: [
 			{
-				displayName: 'Select Synthetic User',
+				displayName: 'Select Synthetic User Name or ID',
 				name: 'syntheticUserId',
 				type: 'options',
 				typeOptions: {
 					loadOptionsMethod: 'getSyntheticUsers',
 				},
 				default: '',
-				description:
-					'Choose which synthetic user / persona to use. Options are loaded from your AgentBrains account.',
+				description: 'Choose which synthetic user / persona to use. Options are loaded from your AgentBrains account. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 			},
 
 			{
@@ -94,8 +131,7 @@ export class AgentBrainsSyntheticEvaluator implements INodeType {
 				name: 'waitForCompletion',
 				type: 'boolean',
 				default: true,
-				description:
-					'If enabled, this node will poll the orchestrator for status until the run finishes or the internal max wait time is reached.',
+				description: 'Whether to poll the orchestrator for status until the run finishes or the internal max wait time is reached',
 			},
 
 			{
@@ -136,6 +172,7 @@ export class AgentBrainsSyntheticEvaluator implements INodeType {
 					'"Recommendation <= $1500", "Clear product link", "Promo explained/applied", "Shipping/returns clarified"',
 			},
 		],
+		usableAsTool: true,
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -147,12 +184,21 @@ export class AgentBrainsSyntheticEvaluator implements INodeType {
 		)) as { accessToken?: string };
 
 		if (!credentials?.accessToken) {
-			throw new Error('No AgentBrains credentials found.');
+			throw new NodeOperationError(this.getNode(), 'No AgentBrains credentials found.');
 		}
 
 		const authHeaders = {
 			Authorization: `token ${credentials.accessToken}`,
 		};
+
+		// Fetch configuration for orchestrator URLs
+		const configResponse = await this.helpers.httpRequest({
+			method: 'GET',
+			url: `${API_BASE}/configuration`,
+			json: true,
+		});
+
+		const { orchestratorStartUrl, orchestratorStatusUrl } = configResponse as IOrchestratorConfig;
 
 		for (let i = 0; i < items.length; i++) {
 			const syntheticUserId = this.getNodeParameter(
@@ -187,31 +233,30 @@ export class AgentBrainsSyntheticEvaluator implements INodeType {
 				i,
 			) as string;
 
-			const syntheticUser = await this.helpers.request({
+			const syntheticUser = (await this.helpers.httpRequest({
 				method: 'GET',
-				uri: `${API_BASE}/synthetic-users/${encodeURIComponent(
+				url: `${API_BASE}/synthetic-users/${encodeURIComponent(
 					syntheticUserId,
 				)}`,
 				json: true,
 				headers: authHeaders,
-			});
+			})) as ISyntheticUser;
 
 			// Adjust field names to match API
 			// Example assumptions:
 			//   userWebhookUrl    = synthetic user webhook
 			//   agentWebhookUrl   = agent workflow webhook in customer's n8n
-			const userUrl = (syntheticUser as any).userWebhookUrl as string;
-			const agentUrl = (syntheticUser as any).agentWebhookUrl as string;
+			const userUrl = syntheticUser.userWebhookUrl;
+			const agentUrl = syntheticUser.agentWebhookUrl;
 
-			const initialMessage =
-				((syntheticUser as any).initialMessage as string) ?? 'Hello';
+			const initialMessage = syntheticUser.initialMessage ?? 'Hello';
 
-			const role = (syntheticUser as any).role as string;
-			const persona_detail = (syntheticUser as any).persona_detail as string;
-			const customerCountry = (syntheticUser as any).customerCountry as string;
-			const locale = (syntheticUser as any).locale as string;
-			const currency = (syntheticUser as any).currency as string;
-			const units = (syntheticUser as any).units as string;
+			const role = syntheticUser.role;
+			const persona_detail = syntheticUser.persona_detail;
+			const customerCountry = syntheticUser.customerCountry;
+			const locale = syntheticUser.locale;
+			const currency = syntheticUser.currency;
+			const units = syntheticUser.units;
 
 			// Build payload for orchestrator
 			const bodyPayload = {
@@ -238,19 +283,19 @@ export class AgentBrainsSyntheticEvaluator implements INodeType {
 			const startPayload = [bodyPayload];
 
 			// Start the synthetic run
-			const startResponse = await this.helpers.request({
+			const startResponse = await this.helpers.httpRequest({
 				method: 'POST',
-				uri: ORCHESTRATOR_START_URL,
+				url: orchestratorStartUrl,
 				body: startPayload,
 				json: true,
 				headers: authHeaders,
 			});
 
 			// Expect the orchestrator to return a jobId
-			const jobId =
-				(startResponse as any).jobId ??
-				((Array.isArray(startResponse) && (startResponse as any)[0]?.jobId) ||
-					null);
+			const startResponseData = Array.isArray(startResponse)
+				? (startResponse as IStartResponse[])[0]
+				: (startResponse as IStartResponse);
+			const jobId = startResponseData?.jobId || null;
 
 			if (!waitForCompletion || !jobId) {
 				// Fire-and-forget mode or missing jobId
@@ -269,12 +314,12 @@ export class AgentBrainsSyntheticEvaluator implements INodeType {
 			const pollIntervalMs = POLL_INTERVAL_SECONDS * 1000;
 
 			const startTime = Date.now();
-			let finalStatus: any = null;
+			let finalStatus: IStatusResponse | null = null;
 
 			while (Date.now() - startTime < maxWaitMs) {
-				const statusResponse = await this.helpers.request({
+				const statusResponse = await this.helpers.httpRequest({
 					method: 'GET',
-					uri: `${ORCHESTRATOR_STATUS_URL}?jobId=${encodeURIComponent(
+					url: `${orchestratorStatusUrl}?jobId=${encodeURIComponent(
 						jobId,
 					)}`,
 					json: true,
@@ -282,12 +327,13 @@ export class AgentBrainsSyntheticEvaluator implements INodeType {
 				});
 
 				// Handle both object and array responses from status flow
-				const statusObj = Array.isArray(statusResponse)
-					? (statusResponse as any)[0]
-					: statusResponse;
+				const statusObj = (
+					Array.isArray(statusResponse)
+						? (statusResponse as IStatusResponse[])[0]
+						: (statusResponse as IStatusResponse)
+				) as IStatusResponse;
 
-				const state =
-					(statusObj as any).state ?? (statusObj as any).status;
+				const state = statusObj.state ?? statusObj.status;
 
 				if (state === 'finished' || state === 'failed' || state === 'error') {
 					finalStatus = statusObj;
@@ -295,7 +341,7 @@ export class AgentBrainsSyntheticEvaluator implements INodeType {
 				}
 
 				// Wait before next poll
-				// eslint-disable-next-line no-await-in-loop
+				 
 				await new Promise((resolve) =>
 					setTimeout(resolve, pollIntervalMs),
 				);
