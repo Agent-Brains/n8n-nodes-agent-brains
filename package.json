@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-agent-brains",
-	"version": "0.1.0",
+	"version": "0.2.0",
   "description": "AgentBrains nodes for n8n to integrate workflows, production webhooks, and Synthetic User validation with the AgentBrains platform.",
 	"license": "MIT",
 	"homepage": "",
@@ -42,7 +42,8 @@
 			"dist/credentials/AgentBrainsIntegrationApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/AgentBrainsIntegrationTrigger/AgentBrainsIntegrationTrigger.node.js"
+			"dist/nodes/AgentBrainsIntegrationTrigger/AgentBrainsIntegrationTrigger.node.js",
+			"dist/nodes/AgentBrainsSyntheticEvaluator/AgentBrainsSyntheticEvaluator.node.js"
 		]
 	},
 	"devDependencies": {

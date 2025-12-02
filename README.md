@@ -20,6 +20,24 @@ Follow the n8n community nodes installation guide: https://docs.n8n.io/integrati
 - Validate workflows with Synthetic Users configured in AgentBrains and attach scoring to conversations.
 - Centralize monitoring and triage in AgentBrains Inbox while executing logic in n8n.
 
+## Transform Node: AgentBrains QA Tester
+
+- Runs a synthetic conversation test against your n8n workflow (or any agent endpoint) using a selected Synthetic User persona.
+- Polls the AgentBrains orchestrator for completion and returns the full transcript, scoring, and pass/fail results.
+- Ideal for "Validation" workflows that run periodically or on-demand to ensure agent quality.
+
+### Typical Uses
+
+- **Regression Testing:** Trigger a validation workflow after deploying changes to verify core flows (e.g., "Purchase under $1500").
+- **Quality Monitoring:** Schedule daily tests to catch drift or API failures in your agent's tools.
+- **A/B Testing:** Run the same scenario against different agent versions/prompts and compare scores.
+
+### Inputs & Configuration
+
+- **Synthetic User:** Select from your available personas (e.g., "Angry Customer", "Tech Savvy Buyer") loaded dynamically from AgentBrains.
+- **Objectives & Constraints:** Define the goal (e.g., "Buy a thermal scope"), constraints ("Budget < $1500"), and success criteria ("Link provided").
+- **Wait for Completion:** Enable to let the node poll until the conversation finishes (recommended for immediate results).
+
 ## Credentials
 
 - Create an account and generate an access token: https://agent-brains.com/system-integration
