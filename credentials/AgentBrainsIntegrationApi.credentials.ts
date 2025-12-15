@@ -30,16 +30,21 @@ export class AgentBrainsIntegrationApi implements ICredentialType {
 		type: 'generic',
 		properties: {
 			headers: {
-				Authorization: '=token {{$credentials?.accessToken}}',
+				Authorization: '={{"Bearer " + $credentials.accessToken }}',
+				'x-access-key': '={{$credentials?.accessToken}}',
 			},
 		},
 	};
 
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: 'https://agent-brains.com',
-			url: '/',
-			method: 'GET',
+			baseURL: 'https://akm.agent-brains.com',
+			url: '/keys/verify',
+			method: 'POST',
+			body: {
+				'key': '={{$credentials?.accessToken}}',
+				'scope': 'knowledge-base'
+			},
 		},
 	};
 }
