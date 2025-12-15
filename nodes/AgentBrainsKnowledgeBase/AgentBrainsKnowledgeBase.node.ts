@@ -73,7 +73,7 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 						value: Resource.Category,
 					},
 					{
-						name: 'Category Type',
+						name: 'Category Alias',
 						value: Resource.CategoryAlias,
 					},
 				],
@@ -104,10 +104,10 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 						action: 'Get entity attachments',
 					},
 					{
-						name: 'Get by Category Type',
+						name: 'Get by Category Alias',
 						value: Operation.GetByCategoryAlias,
-						description: 'List entities by category type',
-						action: 'List entities by category type',
+						description: 'List entities by category alias',
+						action: 'List entities by category alias',
 					},
 					{
 						name: 'Get Many',
@@ -149,10 +149,10 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 						action: 'List many categories',
 					},
 					{
-						name: 'Get by Type',
+						name: 'Get by Alias',
 						value: Operation.GetByAlias,
-						description: 'List categories by type key',
-						action: 'List categories by type key',
+						description: 'List categories by alias key',
+						action: 'List categories by alias key',
 					},
 				],
 				default: Operation.GetAll,
@@ -172,8 +172,8 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 					{
 						name: 'Get Many',
 						value: Operation.GetAll,
-						description: 'List many category types',
-						action: 'List many category types',
+						description: 'List many category aliases',
+						action: 'List many category aliases',
 					},
 				],
 				default: Operation.GetAll,
@@ -194,7 +194,7 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 				description: 'The ID of the resource',
 			},
 			{
-				displayName: 'Category Type',
+				displayName: 'Category Alias',
 				name: 'categoryAlias',
 				type: 'string',
 				default: '',
@@ -205,7 +205,7 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 						operation: [Operation.GetByCategoryAlias, Operation.GetByAlias],
 					},
 				},
-				description: 'The type of the category',
+				description: 'The alias key of the category',
 			},
 			// Operations for entity: getAll
 			{
@@ -322,11 +322,11 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 				},
 				options: [
 					{
-						displayName: 'Category Type',
+						displayName: 'Category Alias',
 						name: 'categoryAlias',
 						type: 'string',
 						default: '',
-						description: 'Filters categories by a specific category type ID',
+						description: 'Filters categories by a specific category alias ID',
 					},
 					{
 						displayName: 'Extended',
