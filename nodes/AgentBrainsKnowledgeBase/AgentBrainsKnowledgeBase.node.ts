@@ -2,18 +2,20 @@ import {
 	type IDataObject,
 	type IExecuteFunctions,
 	type IHttpRequestMethods,
+	type ILoadOptionsFunctions,
 	type INodeExecutionData,
+	type INodePropertyOptions,
 	type INodeType,
 	type INodeTypeDescription,
 } from 'n8n-workflow';
 
- 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 enum Resource {
 	Entity = 'entity',
 	Category = 'category',
 	CategoryAlias = 'categoryAlias',
+	Attachment = 'attachment',
 }
 
 enum Operation {
@@ -65,16 +67,26 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
-						name: 'Entity',
+						// eslint-disable-next-line
+						name: 'Documents',
 						value: Resource.Entity,
+						description: 'Individual items like documents, products, or services stored in the knowledge base',
 					},
 					{
 						name: 'Category',
 						value: Resource.Category,
+						description: 'Logical groups used to segregate and organize related entities',
 					},
 					{
-						name: 'Category Alias',
+						name: 'Category Type',
 						value: Resource.CategoryAlias,
+						description: 'Classifications used to segregate categories into specific types or hierarchies',
+					},
+					{
+						// eslint-disable-next-line
+						name: 'Images',
+						value: Resource.Attachment,
+						description: 'Files and media attached to entities',
 					},
 				],
 				default: Resource.Entity,
@@ -98,28 +110,22 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 						action: 'Get an entity',
 					},
 					{
-						name: 'Get Attachments',
-						value: Operation.GetAttachments,
-						description: 'Get entity attachments',
-						action: 'Get entity attachments',
-					},
-					{
-						name: 'Get by Category Alias',
-						value: Operation.GetByCategoryAlias,
-						description: 'List entities by category alias',
-						action: 'List entities by category alias',
-					},
-					{
 						name: 'Get Many',
 						value: Operation.GetAll,
 						description: 'Retrieve many entities',
 						action: 'Get many entities',
 					},
 					{
-						name: 'Get Relationships',
+						name: 'Get Related Entities',
 						value: Operation.GetRelationships,
-						description: 'Get entity relationships',
-						action: 'Get entity relationships',
+						description: 'Retrieve a list of entities that are linked to the specified entity',
+						action: 'Get related entities',
+					},
+					{
+						name: 'Get by Category Type',
+						value: Operation.GetByCategoryAlias,
+						description: 'List entities by category type',
+						action: 'List entities by category type',
 					},
 				],
 				default: Operation.GetAll,
@@ -149,10 +155,10 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 						action: 'List many categories',
 					},
 					{
-						name: 'Get by Alias',
+						name: 'Get by Type',
 						value: Operation.GetByAlias,
-						description: 'List categories by alias key',
-						action: 'List categories by alias key',
+						description: 'List categories by type key',
+						action: 'List categories by type key',
 					},
 				],
 				default: Operation.GetAll,
@@ -172,8 +178,35 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 					{
 						name: 'Get Many',
 						value: Operation.GetAll,
-						description: 'List many category aliases',
-						action: 'List many category aliases',
+						description: 'List many category types',
+						action: 'List many category types',
+					},
+				],
+				default: Operation.GetAll,
+			},
+			// eslint-disable-next-line n8n-nodes-base/node-param-default-missing
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: {
+					show: {
+						resource: [Resource.Attachment],
+					},
+				},
+				options: [
+					{
+						name: 'Get Many',
+						value: Operation.GetAll,
+						description: 'List many images',
+						action: 'List many images',
+					},
+					{
+						name: 'Get',
+						value: Operation.Get,
+						description: 'Get an image by ID',
+						action: 'Get an image',
 					},
 				],
 				default: Operation.GetAll,
@@ -187,25 +220,44 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 				required: true,
 				displayOptions: {
 					show: {
-						resource: [Resource.Entity, Resource.Category],
+						resource: [Resource.Entity, Resource.Category, Resource.Attachment],
 						operation: [Operation.Get, Operation.GetRelationships, Operation.GetAttachments],
 					},
 				},
 				description: 'The ID of the resource',
 			},
 			{
-				displayName: 'Category Alias',
+				displayName: 'Category Name or ID',
+				name: 'categoryId',
+				type: 'options',
+				default: '',
+				typeOptions: {
+					loadOptionsMethod: 'getCategories',
+				},
+				displayOptions: {
+					show: {
+						resource: [Resource.Entity],
+						operation: [Operation.GetAll],
+					},
+				},
+				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+			},
+			{
+				displayName: 'Category Type Name or ID',
 				name: 'categoryAlias',
-				type: 'string',
+				type: 'options',
 				default: '',
 				required: true,
+				typeOptions: {
+					loadOptionsMethod: 'getCategoryAliases',
+				},
 				displayOptions: {
 					show: {
 						resource: [Resource.Entity, Resource.Category],
 						operation: [Operation.GetByCategoryAlias, Operation.GetByAlias],
 					},
 				},
-				description: 'The alias key of the category',
+				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
 			},
 			// Operations for entity: getAll
 			{
@@ -214,7 +266,7 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 				type: 'boolean',
 				displayOptions: {
 					show: {
-						resource: [Resource.Entity, Resource.Category, Resource.CategoryAlias],
+						resource: [Resource.Entity, Resource.Category, Resource.CategoryAlias, Resource.Attachment],
 						operation: [
 							Operation.GetAll,
 							Operation.GetByCategoryAlias,
@@ -233,7 +285,7 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 				type: 'number',
 				displayOptions: {
 					show: {
-						resource: [Resource.Entity, Resource.Category, Resource.CategoryAlias],
+						resource: [Resource.Entity, Resource.Category, Resource.CategoryAlias, Resource.Attachment],
 						operation: [
 							Operation.GetAll,
 							Operation.GetByCategoryAlias,
@@ -251,6 +303,19 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 				description: 'Max number of results to return',
 			},
 			{
+				displayName: 'Search',
+				name: 'search',
+				type: 'string',
+				default: '',
+				displayOptions: {
+					show: {
+						resource: [Resource.Entity],
+						operation: [Operation.GetAll, Operation.GetByCategoryAlias],
+					},
+				},
+				description: 'Performs a case-insensitive text search across the name, description, and details fields',
+			},
+			{
 				displayName: 'Additional Fields',
 				name: 'additionalFields',
 				type: 'collection',
@@ -264,25 +329,11 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 				},
 				options: [
 					{
-						displayName: 'Category ID',
-						name: 'categoryId',
-						type: 'string',
-						default: '',
-						description: 'Filters entities by a specific category ID',
-					},
-					{
 						displayName: 'Fields',
 						name: 'fields',
 						type: 'string',
 						default: '',
 						description: 'Selects which fields to include in the response (comma-separated)',
-					},
-					{
-						displayName: 'Search',
-						name: 'search',
-						type: 'string',
-						default: '',
-						description: 'Performs a case-insensitive text search across the name, description, and details fields',
 					},
 					{
 						displayName: 'SKU',
@@ -322,11 +373,11 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 				},
 				options: [
 					{
-						displayName: 'Category Alias',
+						displayName: 'Category Type',
 						name: 'categoryAlias',
 						type: 'string',
 						default: '',
-						description: 'Filters categories by a specific category alias ID',
+						description: 'Filters categories by a specific category type ID',
 					},
 					{
 						displayName: 'Extended',
@@ -369,6 +420,106 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 		usableAsTool: true,
 	};
 
+	methods = {
+		loadOptions: {
+			async getCategories(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const apiBase = `${process.env.AGENT_BRAINS_API_BASE || 'https://sds.agent-brains.com'}/integration`;
+				const responseData = await this.helpers.httpRequestWithAuthentication.call(
+					this,
+					'agentBrainsIntegrationApi',
+					{
+						method: 'GET',
+						url: `${apiBase}/categories`,
+						json: true,
+						qs: { scope: 'knowledge-base', extended: 'true' },
+					},
+				);
+
+				let items: IDataObject[] = [];
+				if (Array.isArray(responseData)) {
+					items = responseData as IDataObject[];
+				} else if (responseData && typeof responseData === 'object') {
+					const itemObj = responseData as IDataObject;
+					if (Array.isArray(itemObj.data)) {
+						items = itemObj.data as IDataObject[];
+					} else if (Array.isArray(itemObj.value)) {
+						items = itemObj.value as IDataObject[];
+					}
+				}
+
+				const categoryMap = new Map<string, IDataObject>();
+				items.forEach((item) => categoryMap.set(item._id as string, item));
+
+				const getFullName = (item: IDataObject, visited: Set<string> = new Set()): string => {
+					if (visited.has(item._id as string)) {
+						return (item.name as string) || (item._id as string);
+					}
+					visited.add(item._id as string);
+
+					if (item.parent) {
+						let parentId: string | undefined;
+						if (typeof item.parent === 'string') {
+							parentId = item.parent;
+						} else if (typeof item.parent === 'object' && item.parent && '_id' in item.parent) {
+							parentId = (item.parent as IDataObject)._id as string;
+						}
+
+						if (parentId) {
+							const parent = categoryMap.get(parentId);
+							if (parent) {
+								return `${getFullName(parent, visited)} > ${item.name}`;
+							}
+						}
+					}
+					return (item.name as string) || (item._id as string);
+				};
+
+				const options = items.map((item) => {
+					return {
+						name: getFullName(item),
+						value: item._id as string,
+					};
+				});
+
+				options.sort((a, b) => a.name.localeCompare(b.name));
+
+				return options;
+			},
+			async getCategoryAliases(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const apiBase = `${process.env.AGENT_BRAINS_API_BASE || 'https://sds.agent-brains.com'}/integration`;
+				const responseData = await this.helpers.httpRequestWithAuthentication.call(
+					this,
+					'agentBrainsIntegrationApi',
+					{
+						method: 'GET',
+						url: `${apiBase}/category-aliases`,
+						json: true,
+						qs: { scope: 'knowledge-base' },
+					},
+				);
+
+				let items: IDataObject[] = [];
+				if (Array.isArray(responseData)) {
+					items = responseData as IDataObject[];
+				} else if (responseData && typeof responseData === 'object') {
+					const itemObj = responseData as IDataObject;
+					if (Array.isArray(itemObj.data)) {
+						items = itemObj.data as IDataObject[];
+					} else if (Array.isArray(itemObj.value)) {
+						items = itemObj.value as IDataObject[];
+					}
+				}
+
+				return items.map((item) => {
+					return ({
+						name: (item.name as string) || (item.aliasKey as string),
+						value: (item.aliasKey as string),
+					});
+				});
+			},
+		},
+	};
+
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
@@ -388,6 +539,8 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 					responseData = await handleCategory(this, operation, i, API_BASE);
 				} else if (resource === Resource.CategoryAlias) {
 					responseData = await handleCategoryAlias(this, operation, API_BASE);
+				} else if (resource === Resource.Attachment) {
+					responseData = await handleAttachment(this, operation, i, API_BASE);
 				}
 
 				const itemsData = processResponse(responseData, operation, this, i);
@@ -444,8 +597,12 @@ async function handleEntity(
 ): Promise<IDataObject | IDataObject[]> {
 	const operations: { [key: string]: () => Promise<IDataObject | IDataObject[]> } = {
 		[Operation.GetAll]: async () => {
+			const categoryId = ctx.getNodeParameter('categoryId', i, '') as string;
+			const search = ctx.getNodeParameter('search', i, '') as string;
 			const additionalFields = ctx.getNodeParameter('additionalFields', i) as IDataObject;
 			const qs: IDataObject = { ...additionalFields };
+			if (categoryId) qs.categoryId = categoryId;
+			if (search) qs.search = search;
 			return await makeRequest(ctx, 'GET', `${apiBase}/entities`, qs);
 		},
 		[Operation.Get]: async () => {
@@ -463,7 +620,9 @@ async function handleEntity(
 		[Operation.GetByCategoryAlias]: async () => {
 			const categoryAlias = ctx.getNodeParameter('categoryAlias', i) as string;
 			const additionalFields = ctx.getNodeParameter('additionalFields', i) as IDataObject;
+			const search = ctx.getNodeParameter('search', i) as string;
 			const qs: IDataObject = { ...additionalFields };
+			if (search) qs.search = search;
 			return await makeRequest(ctx, 'GET', `${apiBase}/entities/${categoryAlias}`, qs);
 		},
 	};
@@ -512,6 +671,31 @@ async function handleCategoryAlias(
 	if (operation === Operation.GetAll) {
 		return await makeRequest(ctx, 'GET', `${apiBase}/category-aliases`);
 	}
+	return [];
+}
+
+async function handleAttachment(
+	ctx: IExecuteFunctions,
+	operation: Operation,
+	i: number,
+	apiBase: string,
+): Promise<IDataObject | IDataObject[]> {
+	const operations: { [key: string]: () => Promise<IDataObject | IDataObject[]> } = {
+		[Operation.GetAll]: async () => {
+			const additionalFields = ctx.getNodeParameter('additionalFields', i, {}) as IDataObject;
+			const qs: IDataObject = { ...additionalFields };
+			return await makeRequest(ctx, 'GET', `${apiBase}/attachments`, qs);
+		},
+		[Operation.Get]: async () => {
+			const id = ctx.getNodeParameter('id', i) as string;
+			return await makeRequest(ctx, 'GET', `${apiBase}/attachments/${id}`);
+		},
+	};
+
+	if (operation in operations) {
+		return await operations[operation]();
+	}
+
 	return [];
 }
 
