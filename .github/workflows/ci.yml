@@ -19,6 +19,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          registry-url: 'https://npm.pkg.github.com'
+
+      - name: Configure npm auth for GitHub Packages
+        run: |
+          cat > ~/.npmrc <<EOF
+          registry=https://npm.pkg.github.com/
+          _auth="${GITHUB_TOKEN}"
+          email=${PUBLISH_EMAIL}
+          always-auth=true
+          EOF
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISH_EMAIL: ${{ secrets.PUBLISH_EMAIL }}
+      
+      - name: Run npm login
+        run: 'npm login --registry=https://npm.pkg.github.com/ -e=${PUBLISH_EMAIL} --always-auth=true'
 
       - name: Install dependencies
         run: 'npm ci'
@@ -29,11 +45,14 @@ jobs:
       - name: Run build
         run: 'npm run build'
 
+      - name: Run release
+        run: 'npm run release'
+
       - name: Publish to github packages
         if: ${{ github.ref_type != 'tag' }}
-        run: 'npm publish --registry=https://npm.pkg.github.com'
+        run: 'npm publish'
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GH_NODE_REGISTRY_AUTH }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-npm:
     name: Publish to npm on tag
@@ -46,10 +65,24 @@ jobs:
         with:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
+      - name: Configure npm auth for npm registry
+        run: |
+          cat > ~/.npmrc <<EOF
+          registry=https://registry.npmjs.com/
+          _auth="${NPM_TOKEN}"
+          email=${PUBLISH_EMAIL}
+          always-auth=true
+          EOF
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PUBLISH_EMAIL: ${{ secrets.PUBLISH_EMAIL }}
       - name: Install dependencies
         run: 'npm ci'
       - name: Run lint
         run: 'npm run lint'
+      
+      - name: Run release
+        run: 'npm run release'
       - name: Publish to npm
         run: 'npm publish'
         env:

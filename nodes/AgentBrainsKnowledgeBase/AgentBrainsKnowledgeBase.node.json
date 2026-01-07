@@ -1,0 +1,19 @@
+{
+  "node": "n8n-nodes-base.agentBrainsKnowledgeBase",
+  "nodeVersion": "1.0",
+  "codexVersion": "1.0",
+  "description": "Interact with Agent Brains Knowledge Base to manage entities.",
+  "categories": ["Utility", "Development", "AI"],
+  "resources": {
+    "credentialDocumentation": [
+      {
+        "url": "https://agent-brains.com/system-integration"
+      }
+    ],
+    "primaryDocumentation": [
+      {
+        "url": "https://agent-brains.com/system-integration"
+      }
+    ]
+  }
+}

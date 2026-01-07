@@ -42,7 +42,7 @@ interface IStatusResponse {
 	[key: string]: unknown;
 }
 
-// eslint-disable-next-line
+ 
 const API_BASE =
 	process.env.AGENT_BRAINS_API_BASE || 'https://api.agent-brains.com';
 
