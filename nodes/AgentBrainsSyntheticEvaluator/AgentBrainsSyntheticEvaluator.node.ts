@@ -169,19 +169,18 @@ export class AgentBrainsSyntheticEvaluator implements INodeType {
 					'making_a_sale',
 					'human_free_issue_handling',
 				],
-				description:
-					'Which evaluation scores should be calculated for this conversation.',
+				description: 'Which evaluation scores should be calculated for this conversation',
 				options: [
-					{ name: 'Information Completeness', value: 'information_completeness' },
-					{ name: 'On Task', value: 'on_task' },
-					{ name: 'Objection Handling', value: 'objection_handling' },
-					{ name: 'Problem Solving', value: 'problem_solving' },
-					{ name: 'Making a Sale', value: 'making_a_sale' },
 					{ name: "Customer's Mood Change", value: 'customers_mood_change' },
 					{
-						name: 'Human-free Issue Handling',
+						name: 'Human-Free Issue Handling',
 						value: 'human_free_issue_handling',
 					},
+					{ name: 'Information Completeness', value: 'information_completeness' },
+					{ name: 'Making a Sale', value: 'making_a_sale' },
+					{ name: 'Objection Handling', value: 'objection_handling' },
+					{ name: 'On Task', value: 'on_task' },
+					{ name: 'Problem Solving', value: 'problem_solving' },
 				],
 			},
 
@@ -392,7 +391,7 @@ export class AgentBrainsSyntheticEvaluator implements INodeType {
 				}
 
 				// Wait before next poll
-				// eslint-disable-next-line no-await-in-loop
+				 
 				await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
 			}
 
@@ -421,7 +420,8 @@ export class AgentBrainsSyntheticEvaluator implements INodeType {
 					jobId,
 					state,
 					turns,
-					scores: parsedScores,
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					scores: parsedScores as any,
 					timedOut: finalStatus == null,
 				},
 			});

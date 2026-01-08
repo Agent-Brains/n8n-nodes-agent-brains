@@ -83,7 +83,7 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 						description: 'Classifications used to segregate categories into specific types or hierarchies',
 					},
 					{
-						// eslint-disable-next-line
+						 
 						name: 'Images',
 						value: Resource.Attachment,
 						description: 'Files and media attached to entities',
