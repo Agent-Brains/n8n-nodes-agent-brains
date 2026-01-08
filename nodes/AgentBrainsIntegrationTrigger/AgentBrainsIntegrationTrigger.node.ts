@@ -5,9 +5,10 @@ import {
     IWebhookResponseData,
     IHookFunctions,
     NodeConnectionTypes,
+    LoggerProxy,
 } from 'n8n-workflow';
 
-const API_BASE = 'https://api.agent-brains.com';
+const API_BASE = 'https://admin-panel.dwm-sndbx-ai.com/api/n8n';
 
 export class AgentBrainsIntegrationTrigger implements INodeType {
     webhookMethods = {
@@ -15,21 +16,18 @@ export class AgentBrainsIntegrationTrigger implements INodeType {
             checkExists: async function (this: IHookFunctions): Promise<boolean> {
                 const workflow = this.getWorkflow();
                 const workflowId = workflow.id as string;
-                const credentials = await this.getCredentials('agentBrainsIntegrationApi');
                 try {
                     const checkUrl = `${API_BASE}/registered/${encodeURIComponent(workflowId)}`;
-                    const resp = await this.helpers.httpRequest({
+                    const resp = await this.helpers.httpRequestWithAuthentication.call(this, 'agentBrainsIntegrationApi', {
                         method: 'GET',
                         url: checkUrl,
-                        headers: {
-                            Authorization: `token ${credentials.accessToken}`,
-                        },
                         json: true,
                     });
+                    LoggerProxy.info('Webhook check response:', resp);
                     const { registered } = resp as { registered?: boolean };
                     return Boolean(registered);
                 } catch (e) {
-                    this.logger.error('Error checking webhook existence:', e);
+                    LoggerProxy.error('Error checking webhook existence:', e);
                     return false;
                 }
             },
@@ -38,14 +36,10 @@ export class AgentBrainsIntegrationTrigger implements INodeType {
                 const workflowId = workflow.id as string;
                 const workflowName = workflow.name as string;
                 const webhookUrl = this.getNodeWebhookUrl('default');
-                const credentials = await this.getCredentials('agentBrainsIntegrationApi');
                 try {
-                    await this.helpers.httpRequest({
+                    await this.helpers.httpRequestWithAuthentication.call(this, 'agentBrainsIntegrationApi', {
                         method: 'POST',
                         url: `${API_BASE}/register`,
-                        headers: {
-                            Authorization: `token ${credentials.accessToken}`,
-                        },
                         json: true,
                         body: {
                             workflowId,
@@ -53,27 +47,25 @@ export class AgentBrainsIntegrationTrigger implements INodeType {
                             webhookUrl,
                         },
                     });
+                    LoggerProxy.info('Webhook registration response');
                     return true;
                 } catch (e) {
-                    this.logger.error('Error registering workflow:', e);
+                    LoggerProxy.error('Error registering workflow:', e);
                     return false;
                 }
             },
             delete: async function (this: IHookFunctions): Promise<boolean> {
                 const workflow = this.getWorkflow();
                 const workflowId = workflow.id as string;
-                const credentials = await this.getCredentials('agentBrainsIntegrationApi');
                 try {
-                    await this.helpers.httpRequest({
+                    const resp = await this.helpers.httpRequestWithAuthentication.call(this, 'agentBrainsIntegrationApi', {
                         method: 'DELETE',
                         url: `${API_BASE}/unregister/${encodeURIComponent(workflowId)}`,
-                        headers: {
-                            Authorization: `token ${credentials.accessToken}`,
-                        },
                     });
+                    LoggerProxy.info('Webhook unregistration response:', resp);
                     return true;
                 } catch (e) {
-                    this.logger.error('Error unregistering workflow:', e);
+                    LoggerProxy.error('Error unregistering workflow:', e);
                     return false;
                 }
             },
