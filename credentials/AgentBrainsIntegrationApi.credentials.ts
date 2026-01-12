@@ -38,7 +38,8 @@ export class AgentBrainsIntegrationApi implements ICredentialType {
 
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: 'https://akm.agent-brains.com',
+			baseURL: 'https://akm.dwm-sndbx-ai.com',
+			// baseURL: 'https://akm.agent-brains.com',
 			url: '/keys/verify',
 			method: 'POST',
 			body: {

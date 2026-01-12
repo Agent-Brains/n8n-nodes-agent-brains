@@ -27,6 +27,8 @@ enum Operation {
 	GetByAlias = 'getByAlias',
 }
 
+const API_BASE = `${process.env.AGENT_BRAINS_API_BASE || 'https://sds.dwm-sndbx-ai.com'}/integration`;
+
 declare const process: {
 	env: {
 		[key: string]: string | undefined;
@@ -423,13 +425,12 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 	methods = {
 		loadOptions: {
 			async getCategories(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				const apiBase = `${process.env.AGENT_BRAINS_API_BASE || 'https://sds.agent-brains.com'}/integration`;
 				const responseData = await this.helpers.httpRequestWithAuthentication.call(
 					this,
 					'agentBrainsIntegrationApi',
 					{
 						method: 'GET',
-						url: `${apiBase}/categories`,
+						url: `${API_BASE}/categories`,
 						json: true,
 						qs: { scope: 'knowledge-base', extended: 'true' },
 					},
@@ -486,13 +487,12 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 				return options;
 			},
 			async getCategoryAliases(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				const apiBase = `${process.env.AGENT_BRAINS_API_BASE || 'https://sds.agent-brains.com'}/integration`;
 				const responseData = await this.helpers.httpRequestWithAuthentication.call(
 					this,
 					'agentBrainsIntegrationApi',
 					{
 						method: 'GET',
-						url: `${apiBase}/category-aliases`,
+						url: `${API_BASE}/category-aliases`,
 						json: true,
 						qs: { scope: 'knowledge-base' },
 					},
@@ -525,8 +525,6 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 		const returnData: INodeExecutionData[] = [];
 		const resource = this.getNodeParameter('resource', 0) as Resource;
 		const operation = this.getNodeParameter('operation', 0) as Operation;
-
-		const API_BASE = `${process.env.AGENT_BRAINS_API_BASE || 'https://sds.agent-brains.com'}/integration`;
 
 		for (let i = 0; i < items.length; i++) {
 			try {
