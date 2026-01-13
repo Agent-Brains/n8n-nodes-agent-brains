@@ -42,15 +42,15 @@ declare const console: {
 
 export class AgentBrainsKnowledgeBase implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Agent Brains Knowledge Base',
+		displayName: 'AgentBrains Knowledge Base',
 		name: 'agentBrainsKnowledgeBase',
 		icon: 'file:../../icons/agentBrainsIntegration.svg',
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Interact with Agent Brains Knowledge Base',
+		description: 'Interact with the AgentBrains Knowledge Base (Entities, Categories)',
 		defaults: {
-			name: 'Agent Brains Knowledge Base',
+			name: 'AgentBrains Knowledge Base',
 		},
 		inputs: ['main'],
 		outputs: ['main'],

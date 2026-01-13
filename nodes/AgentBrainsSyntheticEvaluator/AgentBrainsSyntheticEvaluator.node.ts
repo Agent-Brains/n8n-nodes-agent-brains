@@ -127,7 +127,7 @@ export class AgentBrainsSyntheticEvaluator implements INodeType {
 	};
 
 	description: INodeTypeDescription = {
-		displayName: 'Agent Brains Synthetic Evaluator',
+		displayName: 'AgentBrains Synthetic Evaluator',
 		name: 'agentBrainsSyntheticEvaluator',
 		group: ['transform'],
 		version: 1,
@@ -135,7 +135,7 @@ export class AgentBrainsSyntheticEvaluator implements INodeType {
 		description:
 			'Start a synthetic conversation via the orchestrator using dynamic synthetic users from AgentBrains',
 		defaults: {
-			name: 'Agent Brains Synthetic Evaluator',
+			name: 'AgentBrains Synthetic Evaluator',
 		},
 		credentials: [
 			{

@@ -55,14 +55,15 @@ export class AgentBrainsIntegrationTrigger implements INodeType {
                 }
             },
             delete: async function (this: IHookFunctions): Promise<boolean> {
-                const workflow = this.getWorkflow();
-                const workflowId = workflow.id as string;
+                // const workflow = this.getWorkflow();
+                // const workflowId = workflow.id as string;
                 try {
-                    const resp = await this.helpers.httpRequestWithAuthentication.call(this, 'agentBrainsIntegrationApi', {
-                        method: 'DELETE',
-                        url: `${API_BASE}/unregister/${encodeURIComponent(workflowId)}`,
-                    });
-                    LoggerProxy.info('Webhook unregistration response:', resp);
+                    // const resp = await this.helpers.httpRequestWithAuthentication.call(this, 'agentBrainsIntegrationApi', {
+                    //     method: 'DELETE',
+                    //     url: `${API_BASE}/unregister/${encodeURIComponent(workflowId)}`,
+                    // });
+                    // LoggerProxy.info('Webhook unregistration response:', resp);
+                    LoggerProxy.info('Webhook unregistration response');
                     return true;
                 } catch (e) {
                     LoggerProxy.error('Error unregistering workflow:', e);
@@ -94,7 +95,7 @@ export class AgentBrainsIntegrationTrigger implements INodeType {
             {
                 name: 'default',
                 httpMethod: 'POST',
-                responseMode: 'responseNode',
+                responseMode: '={{$parameter["responseMode"]}}',
                 path: 'custom-webhook',
             },
         ],
