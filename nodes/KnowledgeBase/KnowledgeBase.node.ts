@@ -16,6 +16,7 @@ enum Resource {
 	Category = 'category',
 	CategoryAlias = 'categoryAlias',
 	Attachment = 'attachment',
+	RelationshipType = 'relationshipType',
 }
 
 enum Operation {
@@ -89,6 +90,11 @@ export class KnowledgeBase implements INodeType {
 						name: 'Images',
 						value: Resource.Attachment,
 						description: 'Files and media attached to entities',
+					},
+					{
+						name: 'Relationship Types',
+						value: Resource.RelationshipType,
+						description: 'Types of relationships that can exist between entities',
 					},
 				],
 				default: Resource.Entity,
@@ -213,6 +219,27 @@ export class KnowledgeBase implements INodeType {
 				],
 				default: Operation.GetAll,
 			},
+			// eslint-disable-next-line n8n-nodes-base/node-param-default-missing
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: {
+					show: {
+						resource: [Resource.RelationshipType],
+					},
+				},
+				options: [
+					{
+						name: 'Get Many',
+						value: Operation.GetAll,
+						description: 'List many relationship types',
+						action: 'List many relationship types',
+					},
+				],
+				default: Operation.GetAll,
+			},
 			// Common parameters
 			{
 				displayName: 'ID',
@@ -291,7 +318,7 @@ export class KnowledgeBase implements INodeType {
 				type: 'boolean',
 				displayOptions: {
 					show: {
-						resource: [Resource.Entity, Resource.Category, Resource.CategoryAlias, Resource.Attachment],
+						resource: [Resource.Entity, Resource.Category, Resource.CategoryAlias, Resource.Attachment, Resource.RelationshipType],
 						operation: [
 							Operation.GetAll,
 							Operation.GetByCategoryAlias,
@@ -310,7 +337,7 @@ export class KnowledgeBase implements INodeType {
 				type: 'number',
 				displayOptions: {
 					show: {
-						resource: [Resource.Entity, Resource.Category, Resource.CategoryAlias, Resource.Attachment],
+						resource: [Resource.Entity, Resource.Category, Resource.CategoryAlias, Resource.Attachment, Resource.RelationshipType],
 						operation: [
 							Operation.GetAll,
 							Operation.GetByCategoryAlias,
@@ -585,6 +612,8 @@ export class KnowledgeBase implements INodeType {
 					responseData = await handleCategoryAlias(this, operation, API_BASE);
 				} else if (resource === Resource.Attachment) {
 					responseData = await handleAttachment(this, operation, i, API_BASE);
+				} else if (resource === Resource.RelationshipType) {
+					responseData = await handleRelationshipType(this, operation, API_BASE);
 				}
 
 				const itemsData = processResponse(responseData, operation, this, i);
@@ -716,6 +745,17 @@ async function handleCategoryAlias(
 ): Promise<IDataObject | IDataObject[]> {
 	if (operation === Operation.GetAll) {
 		return await makeRequest(ctx, 'GET', `${apiBase}/category-aliases`);
+	}
+	return [];
+}
+
+async function handleRelationshipType(
+	ctx: IExecuteFunctions,
+	operation: Operation,
+	apiBase: string,
+): Promise<IDataObject | IDataObject[]> {
+	if (operation === Operation.GetAll) {
+		return await makeRequest(ctx, 'GET', `${apiBase}/relationship-types`);
 	}
 	return [];
 }
