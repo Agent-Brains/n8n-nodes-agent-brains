@@ -9,9 +9,9 @@ import type {
 export class AgentBrainsIntegrationApi implements ICredentialType {
 	name = 'agentBrainsIntegrationApi';
 
-	displayName = 'Agent Brains Integration API';
+	displayName = 'AgentBrains Integration API';
 
-    icon: Icon = 'file:../icons/agentBrainsIntegration.svg';
+	icon: Icon = 'file:../icons/agentBrainsIntegration.svg';
 
 	documentationUrl =
 		'https://agent-brains.com/system-integration';

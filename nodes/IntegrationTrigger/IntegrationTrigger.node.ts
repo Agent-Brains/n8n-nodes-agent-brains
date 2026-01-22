@@ -10,7 +10,7 @@ import {
 
 const API_BASE = 'https://admin-panel.dwm-sndbx-ai.com/api/n8n';
 
-export class AgentBrainsIntegrationTrigger implements INodeType {
+export class IntegrationTrigger implements INodeType {
     webhookMethods = {
         default: {
             checkExists: async function (this: IHookFunctions): Promise<boolean> {
@@ -74,7 +74,7 @@ export class AgentBrainsIntegrationTrigger implements INodeType {
     };
     description: INodeTypeDescription = {
         displayName: 'AgentBrains Integration Trigger',
-        name: 'agentBrainsIntegrationTrigger',
+        name: 'integrationTrigger',
         icon: 'file:../../icons/agentBrainsIntegration.svg',
         group: ['trigger'],
         version: 1,
@@ -152,7 +152,7 @@ export class AgentBrainsIntegrationTrigger implements INodeType {
                 },
             },
         ],
-		usableAsTool: true,
+        usableAsTool: true,
     };
 
     async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {

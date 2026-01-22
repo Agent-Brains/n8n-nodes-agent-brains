@@ -40,10 +40,10 @@ declare const console: {
 	error(message?: any, ...optionalParams: any[]): void;
 };
 
-export class AgentBrainsKnowledgeBase implements INodeType {
+export class KnowledgeBase implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'AgentBrains Knowledge Base',
-		name: 'agentBrainsKnowledgeBase',
+		name: 'knowledgeBase',
 		icon: 'file:../../icons/agentBrainsIntegration.svg',
 		group: ['transform'],
 		version: 1,
@@ -85,7 +85,7 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 						description: 'Classifications used to segregate categories into specific types or hierarchies',
 					},
 					{
-						 
+
 						name: 'Images',
 						value: Resource.Attachment,
 						description: 'Files and media attached to entities',
@@ -261,6 +261,29 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 				},
 				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
 			},
+			// Operations for entity: getRelationships
+			{
+				displayName: 'Additional Fields',
+				name: 'additionalFields',
+				type: 'collection',
+				placeholder: 'Add Field',
+				default: {},
+				displayOptions: {
+					show: {
+						resource: [Resource.Entity],
+						operation: [Operation.GetRelationships],
+					},
+				},
+				options: [
+					{
+						displayName: 'Type',
+						name: 'type',
+						type: 'string',
+						default: '',
+						description: 'Filters relationships by a specific type (e.g., "is-accessory-for")',
+					},
+				],
+			},
 			// Operations for entity: getAll
 			{
 				displayName: 'Return All',
@@ -415,6 +438,29 @@ export class AgentBrainsKnowledgeBase implements INodeType {
 						type: 'string',
 						default: '',
 						description: 'Performs a case-insensitive text search',
+					},
+				],
+			},
+			// Operations for attachment: getAll
+			{
+				displayName: 'Additional Fields',
+				name: 'additionalFields',
+				type: 'collection',
+				placeholder: 'Add Field',
+				default: {},
+				displayOptions: {
+					show: {
+						resource: [Resource.Attachment],
+						operation: [Operation.GetAll],
+					},
+				},
+				options: [
+					{
+						displayName: 'Fields',
+						name: 'fields',
+						type: 'string',
+						default: '',
+						description: 'Selects which fields to include in the response (comma-separated)',
 					},
 				],
 			},
@@ -609,7 +655,9 @@ async function handleEntity(
 		},
 		[Operation.GetRelationships]: async () => {
 			const id = ctx.getNodeParameter('id', i) as string;
-			return await makeRequest(ctx, 'GET', `${apiBase}/entities/${id}/relationships`);
+			const additionalFields = ctx.getNodeParameter('additionalFields', i, {}) as IDataObject;
+			const qs: IDataObject = { ...additionalFields };
+			return await makeRequest(ctx, 'GET', `${apiBase}/entities/${id}/relationships`, qs);
 		},
 		[Operation.GetAttachments]: async () => {
 			const id = ctx.getNodeParameter('id', i) as string;

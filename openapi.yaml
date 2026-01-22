@@ -1,0 +1,1463 @@
+openapi: 3.0.0
+info:
+  title: Entities API
+  description: API for managing and retrieving entities.
+  version: 1.0.0
+servers:
+  - url: /api
+    description: Main API server
+tags:
+  - name: Entities
+    description: Operations related to managing entities.
+  - name: Categories
+    description: Operations related to managing categories.
+  - name: Attachments
+    description: Operations related to managing attachments.
+  - name: Policies
+    description: Operations related to managing policies.
+  - name: Category Aliases
+    description: Operations related to managing category aliases.
+  - name: Attachment Types
+    description: Operations related to managing attachment types.
+  - name: Relationship Types
+    description: Operations related to managing relationship types.
+  - name: Tenants
+    description: Operations related to managing tenants.
+
+paths:
+  /entities:
+    get:
+      tags:
+        - Entities
+      summary: List and filter entities
+      description: Retrieves a list of entities with powerful filtering and field selection capabilities.
+      operationId: listEntities
+      parameters:
+        - name: categoryId
+          in: query
+          description: Filters entities by a specific category ID.
+          required: false
+          schema:
+            type: string
+            format: objectId
+          example: '68dfc8fd5e40fe1ae99c6b5b'
+        - name: tags
+          in: query
+          description: Filters entities by one or more tags (comma-separated). Matches entities with any of the provided tags.
+          required: false
+          schema:
+            type: string
+          example: 'guide,electronics'
+        - name: sku
+          in: query
+          description: Retrieves an entity by its exact Stock Keeping Unit (SKU).
+          required: false
+          schema:
+            type: string
+          example: 'ABC-12345'
+        - name: source
+          in: query
+          description: Filters entities by their original source identifier.
+          required: false
+          schema:
+            type: string
+          example: 'website-import-oct2025'
+        - name: search
+          in: query
+          description: Performs a case-insensitive text search across the name, description, and details fields.
+          required: false
+          schema:
+            type: string
+          example: 'portable power'
+        - name: fields
+          in: query
+          description: Selects which fields to include in the response (comma-separated).
+          required: false
+          schema:
+            type: string
+          example: 'name,sku,price'
+      responses:
+        '200':
+          description: A list of entities was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Entity'
+              examples:
+                fullResponse:
+                  summary: Example with all fields
+                  value:
+                    - _id: "68dfc8fd5e40fe1ae99c6b5a"
+                      name: "EcoFlow River Max"
+                      description: "A powerful, portable power station for outdoor adventures and home backup."
+                      details: "<h1>EcoFlow River Max</h1><p>More details here...</p>"
+                      source: "website-import-oct2025"
+                      sku: "EFR-MAX-001"
+                      category: "68dfc8fd5e40fe1ae99c6b5b"
+                      tags:
+                        - "power-station"
+                        - "portable"
+                        - "electronics"
+                      attachments:
+                        - id: "68dfc8fd5e40fe1ae99c6b5c"
+                          type: "main-image"
+                          url: "https://example.com/images/ecoflow-main.jpg"
+                          name: "EcoFlow River Max front view"
+                        - id: "68dfc8fd5e40fe1ae99c6b5d"
+                          type: "detail-image"
+                          url: "https://example.com/images/ecoflow-ports.jpg"
+                          name: "Close-up of ports"
+                      relations:
+                        - sourceEntity: "68dfc8fd5e40fe1ae99c6b5a"
+                          targetEntity: "68dfc8fd5e40fe1ae99c6b6e"
+                          type: "is-accessory-for"
+                          relationDescription: "The solar panel is an accessory for the power station."
+                      createdAt: "2025-10-05T20:00:00Z"
+                      updatedAt: "2025-10-05T20:00:00Z"
+                filteredByTag:
+                  summary: Example filtered by tags=electronics
+                  value:
+                    - _id: "68dfc8fd5e40fe1ae99c6b5a"
+                      name: "EcoFlow River Max"
+                      description: "A powerful, portable power station for outdoor adventures and home backup."
+                      sku: "EFR-MAX-001"
+                      tags:
+                        - "power-station"
+                        - "portable"
+                        - "electronics"
+                selectedFields:
+                  summary: Example with selected fields (name,sku)
+                  value:
+                    - name: "EcoFlow River Max"
+                      sku: "EFR-MAX-001"
+                    - name: "TerraGlide Pro Hiking Boot"
+                      sku: "TGP-HB-42"
+        '400':
+          description: Bad Request - The request was improperly formatted or contained invalid parameters.
+        '404':
+          description: Not Found - No entities matched the specified filters.
+    post:
+      tags:
+        - Entities
+      summary: Create a new entity
+      description: Adds a new entity to the collection.
+      operationId: createEntity
+      requestBody:
+        description: The entity object to be created.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewEntity'
+            example:
+              name: "New Solar Panel 200W"
+              description: "A foldable and portable solar panel for charging stations."
+              details: "<h1>Portable Solar Panel</h1><p>200W output.</p>"
+              source: "manual-entry-2025"
+              sku: "SP-PORT-200"
+              category: "68dfc8fd5e40fe1ae99c6b5b"
+              tags:
+                - "solar"
+                - "portable"
+                - "accessory"
+              attachments:
+                - "68dfc8fd5e40fe1ae99c6b5c"
+      responses:
+        '201':
+          description: Entity created successfully. Returns the newly created entity.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entity'
+        '400':
+          description: Bad Request - Invalid input data provided.
+
+  /entities/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: The ID of the entity to retrieve or modify.
+        required: true
+        schema:
+          type: string
+          format: objectId
+    get:
+      tags:
+        - Entities
+      summary: Get an entity by ID
+      description: Retrieves a single entity by its unique ID.
+      operationId: getEntityById
+      responses:
+        '200':
+          description: Successful retrieval of the entity.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entity'
+        '404':
+          description: Not Found - No entity was found with the specified ID.
+    patch:
+      tags:
+        - Entities
+      summary: Partially update an entity
+      description: Updates one or more fields of an existing entity. Only the fields provided in the request body will be changed. At least one field must be provided.
+      operationId: patchEntity
+      requestBody:
+        description: An object containing the fields to update. At least one field is required.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchEntity'
+            examples:
+              updateNameOnly:
+                summary: Update only the name
+                value:
+                  name: "EcoFlow River Max (Updated Name Only)"
+              updateMultipleFields:
+                summary: Update multiple fields
+                value:
+                  name: "EcoFlow River Max (2025 Edition)"
+                  description: "Updated description for the new model."
+                  source: "manual-update-nov2025"
+              updateCategory:
+                summary: Update category
+                value:
+                  category: "68dfc8fd5e40fe1ae99c6b5c"
+      responses:
+        '200':
+          description: Entity patched successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entity'
+        '400':
+          description: Bad Request - The request body is invalid or no fields were provided.
+        '404':
+          description: Not Found - No entity was found with the specified ID.
+    delete:
+      tags:
+        - Entities
+      summary: Delete an entity
+      description: Permanently removes an entity by its ID.
+      operationId: deleteEntity
+      responses:
+        '204':
+          description: Entity deleted successfully.
+        '404':
+          description: Not Found - No entity was found with the specified ID.
+
+  /entities/{id}/relationships:
+    get:
+      tags:
+        - Entities
+      summary: Get entity relationships
+      description: Returns all relationships for a specific entity.
+      operationId: getEntityRelationships
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the entity.
+          required: true
+          schema:
+            type: string
+            format: objectId
+        - name: type
+          in: query
+          description: Filters relationships by a specific type (e.g., 'is-accessory-for').
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of relationships was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Relation'
+        '404':
+          description: Not Found - No entity was found with the specified ID.
+
+  /entities/{id}/attachments:
+    get:
+      tags:
+        - Entities
+      summary: Get entity attachments
+      description: Returns all attachments for a specific entity.
+      operationId: getEntityAttachments
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the entity.
+          required: true
+          schema:
+            type: string
+            format: objectId
+      responses:
+        '200':
+          description: A list of attachments was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FullAttachment'
+        '404':
+          description: Not Found - No entity was found with the specified ID.
+
+  /entities/{categoryAlias}:
+    get:
+      tags:
+        - Entities
+      summary: List entities by category alias
+      description: Retrieves a list of entities belonging to a specific category, identified by its alias (e.g., 'products').
+      operationId: listEntitiesByCategoryAlias
+      parameters:
+        - name: categoryAlias
+          in: path
+          description: The alias of the category to retrieve entities from.
+          required: true
+          schema:
+            type: string
+          example: 'products'
+        - name: tags
+          in: query
+          description: Filters entities by one or more tags (comma-separated). Matches entities with any of the provided tags.
+          required: false
+          schema:
+            type: string
+          example: 'guide,electronics'
+        - name: sku
+          in: query
+          description: Retrieves an entity by its exact Stock Keeping Unit (SKU).
+          required: false
+          schema:
+            type: string
+          example: 'ABC-12345'
+        - name: source
+          in: query
+          description: Filters entities by their original source identifier.
+          required: false
+          schema:
+            type: string
+          example: 'website-import-oct2025'
+        - name: search
+          in: query
+          description: Performs a case-insensitive text search across the name, description, and details fields.
+          required: false
+          schema:
+            type: string
+          example: 'portable power'
+        - name: fields
+          in: query
+          description: Selects which fields to include in the response (comma-separated).
+          required: false
+          schema:
+            type: string
+          example: 'name,sku,price'
+      responses:
+        '200':
+          description: A list of entities was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Entity'
+        '400':
+          description: Bad Request - The request was improperly formatted or contained invalid parameters.
+        '404':
+          description: Not Found - No entities matched the specified filters.
+
+  /categories:
+    get:
+      tags:
+        - Categories
+      summary: List all categories
+      description: Retrieves a list of all categories with filtering options.
+      operationId: listCategories
+      parameters:
+        - name: categoryAlias
+          in: query
+          description: Filters categories by a specific category alias ID.
+          required: false
+          schema:
+            type: string
+            format: objectId
+        - name: policy
+          in: query
+          description: Filters categories by a specific policy ID.
+          required: false
+          schema:
+            type: string
+            format: objectId
+        - name: parent
+          in: query
+          description: Filters categories by a parent ID. Use 'null' to get top-level categories.
+          required: false
+          schema:
+            type: string
+        - name: search
+          in: query
+          description: Performs a case-insensitive text search across the name and description fields.
+          required: false
+          schema:
+            type: string
+        - name: fields
+          in: query
+          description: Selects which fields to include in the response (comma-separated).
+          required: false
+          schema:
+            type: string
+        - name: extended
+          in: query
+          description: Set to 'true' to populate policy, parent and children fields.
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: A list of categories was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UnifiedCategory'
+    post:
+      tags:
+        - Categories
+      summary: Create a new category
+      description: Adds a new category to the system.
+      operationId: createCategory
+      requestBody:
+        description: The category object to be created.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewUnifiedCategory'
+            example:
+              name: "Portable Power Stations"
+              description: "Compact and powerful stations for on-the-go energy."
+              categoryAlias: "68dfc8fd5e40fe1ae99c6b5b"
+              policy: "a1b2c3d4e5f6a7b8c9d0e1f2"
+              parent: "f9e8d7c6b5a4b3c2d1e0f9a8"
+      responses:
+        '201':
+          description: Category created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnifiedCategory'
+        '400':
+          description: Bad Request - Invalid input data.
+
+  /categories/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: The ID of the category.
+        required: true
+        schema:
+          type: string
+          format: objectId
+    get:
+      tags:
+        - Categories
+      summary: Get a category by ID
+      description: Retrieves a specific category, potentially populated with its hierarchy.
+      operationId: getCategoryById
+      responses:
+        '200':
+          description: Successful retrieval of category.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnifiedCategory'
+        '404':
+          description: Not Found - Category not found.
+    patch:
+      tags:
+        - Categories
+      summary: Partially update a category
+      description: Updates one or more fields of an existing category. Only the fields provided in the request body will be changed. At least one field must be provided.
+      operationId: patchCategory
+      requestBody:
+        description: An object containing the fields to update. At least one field is required.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchUnifiedCategory'
+            examples:
+              updateNameOnly:
+                summary: Update only the name
+                value:
+                  name: "Updated Category Name"
+              updateMultipleFields:
+                summary: Update multiple fields
+                value:
+                  name: "Electronics & Gadgets"
+                  description: "Updated description for electronics category"
+              updatePolicy:
+                summary: Update policy
+                value:
+                  policy: "68dfc8fd5e40fe1ae99c6b5d"
+              updatePermissions:
+                summary: Update permissions
+                value:
+                  permissions:
+                    canDelete: false
+                    canChangeHierarchy: true
+      responses:
+        '200':
+          description: Category patched successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnifiedCategory'
+        '400':
+          description: Bad Request - The request body is invalid or no fields were provided.
+        '404':
+          description: Not Found - Category not found.
+    delete:
+      tags:
+        - Categories
+      summary: Delete a category
+      description: Deletes a category by its ID.
+      operationId: deleteCategory
+      responses:
+        '204':
+          description: Category deleted successfully.
+        '404':
+          description: Not Found.
+
+  /categories/{categoryAlias}:
+    get:
+      tags:
+        - Categories
+      summary: List categories by alias key
+      description: Retrieves a list of categories that belong to a specific category alias, identified by its unique key.
+      operationId: listCategoriesByAlias
+      parameters:
+        - name: categoryAlias
+          in: path
+          description: The unique 'aliasKey' of the category alias (e.g., 'products').
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of categories was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UnifiedCategory'
+        '404':
+          description: Not Found - No category alias found with the specified key.
+
+  /attachments:
+    post:
+      tags:
+        - Attachments
+      summary: Upload an attachment
+      description: Uploads a file to S3 and creates an attachment record in the database. The file can be provided as a base64 string, binary data, or multipart/form-data.
+      operationId: uploadAndCreateAttachment
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The file to upload.
+                folder:
+                  type: string
+                  description: Optional sub-folder within the tenant's S3 bucket.
+                name:
+                  type: string
+                  description: Optional filename. If not provided, it will be inferred from the uploaded file or generated.
+                contentType:
+                  type: string
+                  description: Optional content type. If not provided, it will be inferred.
+                type:
+                  type: string
+                  description: The ID of the attachment type.
+                entities:
+                  type: string
+                  description: A JSON string of an array of entity IDs to link to this attachment.
+                annotations:
+                  type: string
+                  description: A JSON string of an object containing annotations.
+          application/json:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  description: Base64 encoded file content. Can be a data URL.
+                folder:
+                  type: string
+                filename:
+                  type: string
+                contentType:
+                  type: string
+                type:
+                  type: string
+                entities:
+                  type: array
+                  items:
+                    type: string
+                annotations:
+                  type: object
+      responses:
+        '201':
+          description: File uploaded and attachment created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  attachment:
+                    $ref: '#/components/schemas/FullAttachment'
+        '400':
+          description: Bad Request - Missing tenant ID, or no file data provided.
+        '500':
+          description: Internal Server Error.
+    get:
+      tags:
+        - Attachments
+      summary: Get attachments for a tenant
+      description: Retrieves a list of attachments for a specific tenant, with optional filters.
+      operationId: getAttachments
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: populated
+          in: query
+          schema:
+            type: boolean
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: fields
+          in: query
+          schema:
+            type: string
+          description: Comma-separated list of fields to return.
+      responses:
+        '200':
+          description: A list of attachments.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FullAttachment'
+        '400':
+          description: Bad Request - Missing tenant ID.
+        '500':
+          description: Internal Server Error.
+
+  /attachments/link:
+    post:
+      tags:
+        - Attachments
+      summary: Link or unlink an attachment
+      description: Links or unlinks an attachment to/from an entity using either the attachment ID or URL.
+      operationId: linkOrUnlinkAttachment
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                attachmentId:
+                  type: string
+                attachmentUrl:
+                  type: string
+                entityId:
+                  type: string
+                action:
+                  type: string
+                  enum: [link, unlink]
+                  default: link
+      responses:
+        '200':
+          description: Attachment linked/unlinked successfully.
+        '400':
+          description: Bad Request - Missing required parameters.
+        '404':
+          description: Attachment not found.
+        '500':
+          description: Internal Server Error.
+
+  /attachments/{attachmentId}:
+    parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: attachmentId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - Attachments
+      summary: Get an attachment by ID
+      operationId: getAttachmentById
+      parameters:
+        - name: populated
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful retrieval of an attachment.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullAttachment'
+        '404':
+          description: Attachment not found.
+    patch:
+      tags:
+        - Attachments
+      summary: Update an attachment
+      operationId: updateAttachment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAttachment'
+      responses:
+        '200':
+          description: Attachment updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullAttachment'
+        '404':
+          description: Attachment not found.
+    delete:
+      tags:
+        - Attachments
+      summary: Delete an attachment
+      operationId: deleteAttachment
+      responses:
+        '200':
+          description: Attachment deleted successfully.
+        '404':
+          description: Attachment not found.
+
+  /policies:
+    get:
+      tags:
+        - Policies
+      summary: List all policies
+      description: Retrieves a list of all available policies.
+      operationId: listPolicies
+      responses:
+        '200':
+          description: A list of policies was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Policy'
+
+  /category-aliases:
+    get:
+      tags:
+        - Category Aliases
+      summary: List all category aliases
+      description: Retrieves a list of all available category aliases.
+      operationId: listCategoryAliases
+      responses:
+        '200':
+          description: A list of category aliases was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryAlias'
+
+  /attachment-types:
+    get:
+      tags:
+        - Attachment Types
+      summary: List all attachment types
+      description: Retrieves a list of all available attachment types.
+      operationId: listAttachmentTypes
+      responses:
+        '200':
+          description: A list of attachment types was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AttachmentType'
+
+  /relationship-types:
+    get:
+      tags:
+        - Relationship Types
+      summary: List all relationship types
+      description: Retrieves a list of all available relationship types.
+      operationId: listRelationshipTypes
+      responses:
+        '200':
+          description: A list of relationship types was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RelationshipType'
+
+  /tenants/seed:
+    post:
+      tags:
+        - Tenants
+      summary: Seed a new tenant
+      description: Creates a new tenant database and seeds it with initial data including category aliases, policies, categories, relationship types, and attachment types.
+      operationId: seedTenant
+      requestBody:
+        description: The tenant seed data containing all initial configuration.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantSeed'
+            example:
+              tenantId: "customer-123"
+              categoryAliases:
+                - name: "Products"
+                  description: "Product catalog categories"
+                  aliasKey: "products"
+                - name: "Documents"
+                  description: "Document management categories"
+                  aliasKey: "documents"
+              policies:
+                - name: "Product Policy"
+                  description: "Policy for product entities"
+                  policyKey: "product-policy"
+                  inputType: "JSON"
+                  processingPromptTemplate: "Process product data"
+                  outputFormat: "JSON"
+              categories:
+                - name: "Electronics"
+                  description: "Electronic products"
+                  parent: null
+                  policyKey: "product-policy"
+                  aliasKey: "products"
+                  permissions:
+                    canDelete: true
+                    canChangeHierarchy: true
+              relationshipTypes:
+                - name: "Accessory For"
+                  description: "Indicates an accessory relationship"
+                  typeKey: "is-accessory-for"
+              attachmentTypes:
+                - name: "Main Image"
+                  description: "Primary product image"
+                  typeKey: "main-image"
+      responses:
+        '200':
+          description: Tenant seeded successfully with all initial data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantSeedResponse'
+        '400':
+          description: Bad Request - Tenant already exists or invalid input data.
+        '500':
+          description: Internal Server Error - Failed to seed tenant.
+
+  /tenants/{tenantId}:
+    delete:
+      tags:
+        - Tenants
+      summary: Delete a tenant
+      description: Permanently deletes a tenant and all associated data.
+      operationId: deleteTenant
+      parameters:
+        - name: tenantId
+          in: path
+          description: The unique identifier of the tenant to delete.
+          required: true
+          schema:
+            type: string
+          example: "customer-123"
+      responses:
+        '200':
+          description: Tenant deleted successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Tenant deleted successfully"
+                  tenantId:
+                    type: string
+                    example: "customer-123"
+        '400':
+          description: Bad Request - Missing or invalid tenantId.
+        '404':
+          description: Not Found - Tenant does not exist.
+        '500':
+          description: Internal Server Error - Failed to delete tenant.
+components:
+  schemas:
+    Attachment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: objectId
+          description: The unique identifier for the attachment.
+        type:
+          type: string
+          description: The type of attachment (e.g., 'main-image').
+        url:
+          type: string
+          format: uri
+          description: The URL to access the attachment.
+        name:
+          type: string
+          description: The display name of the attachment.
+    Relation:
+      type: object
+      properties:
+        sourceEntity:
+          type: string
+          format: objectId
+        targetEntity:
+          type: string
+          format: objectId
+        categoryPath:
+          type: array
+          items:
+            type: string
+            format: objectId
+        type:
+          type: string
+          description: "The type of the relationship (e.g., 'is-accessory-for')."
+        relationDescription:
+          type: string
+    Entity:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: objectId
+          description: Unique identifier for the entity.
+        name:
+          type: string
+          description: The name of the entity.
+        description:
+          type: string
+          description: A short description of the entity.
+        details:
+          type: string
+          description: Detailed information about the entity, often in HTML or Markdown.
+        source:
+          type: string
+          description: The original source of the entity's data.
+        sku:
+          type: string
+          description: The Stock Keeping Unit for the entity, if applicable.
+        status:
+          type: string
+          enum:
+            - draft
+            - active
+            - archived
+          description: The lifecycle status of the entity.
+        category:
+          type: string
+          format: objectId
+          description: The ID of the category this entity belongs to.
+        isVectorized:
+          type: boolean
+          description: Indicates whether the entity has been vectorized for semantic search.
+        tags:
+          type: array
+          items:
+            type: string
+          description: A list of tags associated with the entity.
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Attachment'
+          description: A list of populated attachment objects related to the entity.
+        relations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Relation'
+        createdAt:
+          type: string
+          format: date-time
+          description: The timestamp when the entity was created.
+        updatedAt:
+          type: string
+          format: date-time
+          description: The timestamp when the entity was last updated.
+    NewEntity:
+      type: object
+      required:
+        - name
+        - category
+      properties:
+        name:
+          type: string
+          description: The name of the entity.
+        description:
+          type: string
+          description: A short description of the entity.
+        details:
+          type: string
+          description: Detailed information about the entity, often in HTML or Markdown.
+        source:
+          type: string
+          description: The original source of the entity's data.
+        sku:
+          type: string
+          description: The Stock Keeping Unit for the entity, if applicable.
+        status:
+          type: string
+          enum:
+            - draft
+            - active
+            - archive
+          description: The lifecycle status of the entity.
+        category:
+          type: string
+          format: objectId
+          description: The ID of the category this entity belongs to.
+        tags:
+          type: array
+          items:
+            type: string
+          description: A list of tags associated with the entity.
+        attachments:
+          type: array
+          items:
+            type: string
+            format: objectId
+          description: A list of attachment IDs to associate with the entity.
+        relations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Relation'
+          description: A list of relation objects to create.
+    PatchEntity:
+      type: object
+      description: Schema for partially updating an entity. All fields are optional, but at least one field must be provided.
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          description: The name of the entity.
+        description:
+          type: string
+          description: A short description of the entity.
+        details:
+          type: string
+          description: Detailed information about the entity, often in HTML or Markdown.
+        source:
+          type: string
+          description: The original source of the entity's data.
+        sku:
+          type: string
+          description: The Stock Keeping Unit for the entity, if applicable.
+        status:
+          type: string
+          enum:
+            - draft
+            - active
+            - archived
+          description: The lifecycle status of the entity.
+        category:
+          type: string
+          format: objectId
+          description: The ID of the category this entity belongs to.
+        tags:
+          type: array
+          items:
+            type: string
+          description: A list of tags associated with the entity.
+        attachments:
+          type: array
+          items:
+            type: string
+            format: objectId
+          description: A list of attachment IDs to associate with the entity.
+        relations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Relation'
+          description: A list of relation objects to create.
+    CategoryAlias:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: objectId
+        name:
+          type: string
+        description:
+          type: string
+        aliasKey:
+          type: string
+    UnifiedCategory:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: objectId
+        name:
+          type: string
+        description:
+          type: string
+        categoryAlias:
+          type: string
+          format: objectId
+        policy:
+          oneOf:
+            - type: string
+              format: objectId
+            - $ref: '#/components/schemas/Policy'
+        parent:
+          type: string
+          format: objectId
+          nullable: true
+        children:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/ObjectId'
+              - $ref: '#/components/schemas/UnifiedCategory'
+        entities:
+          type: array
+          items:
+            type: string
+            format: objectId
+        permissions:
+          type: object
+          properties:
+            canDelete:
+              type: boolean
+            canChangeHierarchy:
+              type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    NewUnifiedCategory:
+      type: object
+      required:
+        - name
+        - description
+        - categoryAlias
+        - policy
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        categoryAlias:
+          type: string
+          format: objectId
+        policy:
+          type: string
+          format: objectId
+        parent:
+          type: string
+          format: objectId
+          nullable: true
+        permissions:
+          type: object
+          properties:
+            canDelete:
+              type: boolean
+            canChangeHierarchy:
+              type: boolean
+    PatchUnifiedCategory:
+      type: object
+      description: Schema for partially updating a category. All fields are optional, but at least one field must be provided.
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          description: The name of the category.
+        description:
+          type: string
+          description: A description of the category.
+        categoryAlias:
+          type: string
+          format: objectId
+          description: The category alias ID this category belongs to.
+        policy:
+          type: string
+          format: objectId
+          description: The policy ID associated with this category.
+        parent:
+          type: string
+          format: objectId
+          nullable: true
+          description: The parent category ID, or null for top-level categories.
+        permissions:
+          type: object
+          properties:
+            canDelete:
+              type: boolean
+              description: Whether this category can be deleted.
+            canChangeHierarchy:
+              type: boolean
+              description: Whether this category's hierarchy can be changed.
+    Policy:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: objectId
+        name:
+          type: string
+        description:
+          type: string
+        policyKey:
+          type: string
+        inputType:
+          type: string
+          enum: ['PDF', 'DOCX', 'HTML', 'CSV', 'JSON', 'IMAGE', 'EMAIL', 'TXT']
+        processingPromptTemplate:
+          type: string
+        outputFormat:
+          type: string
+          enum: ['MARKDOWN', 'JSON']
+    AttachmentType:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: objectId
+        name:
+          type: string
+        description:
+          type: string
+        typeKey:
+          type: string
+    RelationshipType:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: objectId
+        name:
+          type: string
+        description:
+          type: string
+        typeKey:
+          type: string
+    FullAttachment:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: objectId
+        name:
+          type: string
+        url:
+          type: string
+          format: uri
+        description:
+          type: string
+        annotations:
+          type: object
+          additionalProperties: true
+          description: A flexible object for storing any kind of metadata.
+        type:
+          type: string
+          format: objectId
+        entities:
+          type: array
+          items:
+            type: string
+            format: objectId
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    NewAttachment:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the attachment.
+        annotations:
+          type: object
+          additionalProperties: true
+          description: A key-value map for extra metadata.
+        type:
+          $ref: '#/components/schemas/ObjectId'
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/ObjectId'
+        file:
+          type: string
+          description: Base64 encoded file content.
+      required:
+        - file
+    PatchAttachment:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The new name of the attachment.
+        annotations:
+          type: object
+          additionalProperties: true
+          description: A key-value map for extra metadata.
+        type:
+          $ref: '#/components/schemas/ObjectId'
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/ObjectId'
+    SeedCategory:
+      type: object
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+          description: The name of the category.
+        description:
+          type: string
+          description: A description of the category.
+        parent:
+          type: string
+          format: objectId
+          nullable: true
+          description: The ID of the parent category, or null for top-level categories.
+        policyKey:
+          type: string
+          nullable: true
+          description: The key of the policy to associate with this category.
+        aliasKey:
+          type: string
+          nullable: true
+          description: The key of the category alias to associate with this category.
+        permissions:
+          type: object
+          properties:
+            canDelete:
+              type: boolean
+              description: Whether this category can be deleted.
+            canChangeHierarchy:
+              type: boolean
+              description: Whether this category's hierarchy can be changed.
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeedCategory'
+          description: Nested child categories.
+    TenantSeed:
+      type: object
+      required:
+        - tenantId
+        - categoryAliases
+        - policies
+        - categories
+        - relationshipTypes
+        - attachmentTypes
+      properties:
+        tenantId:
+          type: string
+          description: The unique identifier for the tenant.
+        categoryAliases:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewCategoryAlias'
+          description: List of category aliases to seed.
+        policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewPolicy'
+          description: List of policies to seed.
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeedCategory'
+          description: List of categories with nested structure to seed.
+        relationshipTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewRelationshipType'
+          description: List of relationship types to seed.
+        attachmentTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewAttachmentType'
+          description: List of attachment types to seed.
+    TenantSeedResponse:
+      type: object
+      properties:
+        categoryAliases:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryAlias'
+          description: The created category aliases.
+        policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Policy'
+          description: The created policies.
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/UnifiedCategory'
+          description: The created categories.

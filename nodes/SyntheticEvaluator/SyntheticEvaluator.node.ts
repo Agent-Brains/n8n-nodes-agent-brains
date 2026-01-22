@@ -39,7 +39,7 @@ interface IStatusResponse {
 	[key: string]: unknown;
 }
 
- 
+
 const API_BASE =
 	process.env.AGENT_BRAINS_API_BASE || 'https://api.agent-brains.com';
 
@@ -90,7 +90,7 @@ function parseHistory(
 	return turns;
 }
 
-export class AgentBrainsSyntheticEvaluator implements INodeType {
+export class SyntheticEvaluator implements INodeType {
 	methods = {
 		loadOptions: {
 			async getSyntheticUsers(this: ILoadOptionsFunctions) {
@@ -128,7 +128,7 @@ export class AgentBrainsSyntheticEvaluator implements INodeType {
 
 	description: INodeTypeDescription = {
 		displayName: 'AgentBrains Synthetic Evaluator',
-		name: 'agentBrainsSyntheticEvaluator',
+		name: 'syntheticEvaluator',
 		group: ['transform'],
 		version: 1,
 		icon: 'file:../../icons/agentBrainsIntegration.svg',
@@ -391,7 +391,7 @@ export class AgentBrainsSyntheticEvaluator implements INodeType {
 				}
 
 				// Wait before next poll
-				 
+
 				await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
 			}
 

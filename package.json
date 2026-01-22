@@ -13,7 +13,13 @@
 		"trigger",
 		"webhook",
 		"synthetic-users",
-		"ai-employees"
+		"ai-employees",
+		"knowledge-base",
+		"entities",
+		"categories",
+		"attachments",
+		"synthetic-users",
+		"category-aliases"
 	],
 	"author": {
 		"name": "Vlad Balabash",
@@ -42,9 +48,9 @@
 			"dist/credentials/AgentBrainsIntegrationApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/AgentBrainsIntegrationTrigger/AgentBrainsIntegrationTrigger.node.js",
-			"dist/nodes/AgentBrainsSyntheticEvaluator/AgentBrainsSyntheticEvaluator.node.js",
-			"dist/nodes/AgentBrainsKnowledgeBase/AgentBrainsKnowledgeBase.node.js"
+			"dist/nodes/IntegrationTrigger/IntegrationTrigger.node.js",
+			"dist/nodes/SyntheticEvaluator/SyntheticEvaluator.node.js",
+			"dist/nodes/KnowledgeBase/KnowledgeBase.node.js"
 		]
 	},
 	"devDependencies": {
