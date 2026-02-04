@@ -50,7 +50,8 @@
 		"nodes": [
 			"dist/nodes/IntegrationTrigger/IntegrationTrigger.node.js",
 			"dist/nodes/SyntheticEvaluator/SyntheticEvaluator.node.js",
-			"dist/nodes/KnowledgeBase/KnowledgeBase.node.js"
+			"dist/nodes/KnowledgeBase/KnowledgeBase.node.js",
+			"dist/nodes/RAG/RAG.node.js"
 		]
 	},
 	"devDependencies": {
