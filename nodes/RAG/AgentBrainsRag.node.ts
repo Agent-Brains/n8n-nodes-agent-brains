@@ -13,7 +13,13 @@ declare const process: {
     };
 };
 
-declare const console: any;
+declare const console: {
+    log(...args: unknown[]): void;
+    error(...args: unknown[]): void;
+    warn(...args: unknown[]): void;
+    info(...args: unknown[]): void;
+    debug(...args: unknown[]): void;
+};
 
 const API_BASE = `${process.env.AGENT_BRAINS_API_BASE || 'https://sds.dwm-sndbx-ai.com'}/integration`;
 
@@ -22,9 +28,9 @@ interface IIndex {
     name: string;
 }
 
-export class RAG implements INodeType {
+export class AgentBrainsRag implements INodeType {
     description: INodeTypeDescription = {
-        displayName: 'Agent Brains RAG',
+        displayName: 'AgentBrains RAG',
         name: 'agentBrainsRag',
         icon: 'file:../../icons/agentBrainsIntegration.svg',
         group: ['transform'],
@@ -73,7 +79,7 @@ export class RAG implements INodeType {
                 description: 'Description of what this tool does, for the AI Agent to understand when to use it',
             },
             {
-                displayName: 'Index',
+                displayName: 'Index Name or ID',
                 name: 'index',
                 type: 'options',
                 typeOptions: {
@@ -86,7 +92,7 @@ export class RAG implements INodeType {
                 },
                 default: '',
                 required: true,
-                description: 'The index to search in',
+                description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
             },
             {
                 displayName: 'Query',
@@ -178,7 +184,7 @@ export class RAG implements INodeType {
                 if (typeof metadata === 'string') {
                     try {
                         metadata = JSON.parse(metadata);
-                    } catch (e) {
+                    } catch {
                         // proceed with raw string or empty object if invalid
                     }
                 }
