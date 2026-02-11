@@ -28,13 +28,18 @@ enum Operation {
 	GetByAlias = 'getByAlias',
 }
 
-const API_BASE = `${process.env.AGENT_BRAINS_API_BASE || 'https://sds.dwm-sndbx-ai.com'}/integration`;
-
-declare const process: {
-	env: {
-		[key: string]: string | undefined;
-	};
+const BASE_DOMAINS: Record<string, string> = {
+	sandbox: 'dwm-sndbx-ai.com',
+	staging: 'agent-brains.com',
 };
+
+function getApiBase(environment: string): string {
+	const domain = BASE_DOMAINS[environment] || BASE_DOMAINS.sandbox;
+	return `https://sds.${domain}/integration`;
+}
+
+
+
 
 declare const console: {
 	log(message?: any, ...optionalParams: any[]): void;
@@ -491,6 +496,34 @@ export class KnowledgeBase implements INodeType {
 					},
 				],
 			},
+			{
+				displayName: 'Options',
+				name: 'options',
+				type: 'collection',
+				placeholder: 'Add Option',
+				default: {},
+				options: [
+					{
+						displayName: 'Environment',
+						name: 'environment',
+						type: 'options',
+						default: 'sandbox',
+						description: 'Select the environment to run requests against',
+						options: [
+							{
+								name: 'Sandbox',
+								value: 'sandbox',
+								description: 'Use the sandbox environment (dwm-sndbx-ai.com)',
+							},
+							{
+								name: 'Staging',
+								value: 'staging',
+								description: 'Use the staging environment (agent-brains.com)',
+							},
+						],
+					},
+				],
+			},
 		],
 		usableAsTool: true,
 	};
@@ -498,12 +531,14 @@ export class KnowledgeBase implements INodeType {
 	methods = {
 		loadOptions: {
 			async getCategories(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const nodeOptions = this.getNodeParameter('options', {}) as { environment?: string };
+				const apiBase = getApiBase(nodeOptions.environment || 'sandbox');
 				const responseData = await this.helpers.httpRequestWithAuthentication.call(
 					this,
 					'agentBrainsIntegrationApi',
 					{
 						method: 'GET',
-						url: `${API_BASE}/categories`,
+						url: `${apiBase}/categories`,
 						json: true,
 						qs: { scope: 'knowledge-base', extended: 'true' },
 					},
@@ -560,12 +595,14 @@ export class KnowledgeBase implements INodeType {
 				return options;
 			},
 			async getCategoryAliases(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const nodeOptions = this.getNodeParameter('options', {}) as { environment?: string };
+				const apiBase = getApiBase(nodeOptions.environment || 'sandbox');
 				const responseData = await this.helpers.httpRequestWithAuthentication.call(
 					this,
 					'agentBrainsIntegrationApi',
 					{
 						method: 'GET',
-						url: `${API_BASE}/category-aliases`,
+						url: `${apiBase}/category-aliases`,
 						json: true,
 						qs: { scope: 'knowledge-base' },
 					},
@@ -596,6 +633,8 @@ export class KnowledgeBase implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
+		const execOptions = this.getNodeParameter('options', 0, {}) as { environment?: string };
+		const apiBase = getApiBase(execOptions.environment || 'sandbox');
 		const resource = this.getNodeParameter('resource', 0) as Resource;
 		const operation = this.getNodeParameter('operation', 0) as Operation;
 
@@ -605,15 +644,15 @@ export class KnowledgeBase implements INodeType {
 				let responseData: IDataObject | IDataObject[] = [];
 
 				if (resource === Resource.Entity) {
-					responseData = await handleEntity(this, operation, i, API_BASE);
+					responseData = await handleEntity(this, operation, i, apiBase);
 				} else if (resource === Resource.Category) {
-					responseData = await handleCategory(this, operation, i, API_BASE);
+					responseData = await handleCategory(this, operation, i, apiBase);
 				} else if (resource === Resource.CategoryAlias) {
-					responseData = await handleCategoryAlias(this, operation, API_BASE);
+					responseData = await handleCategoryAlias(this, operation, apiBase);
 				} else if (resource === Resource.Attachment) {
-					responseData = await handleAttachment(this, operation, i, API_BASE);
+					responseData = await handleAttachment(this, operation, i, apiBase);
 				} else if (resource === Resource.RelationshipType) {
-					responseData = await handleRelationshipType(this, operation, API_BASE);
+					responseData = await handleRelationshipType(this, operation, apiBase);
 				}
 
 				const itemsData = processResponse(responseData, operation, this, i);
