@@ -102,6 +102,18 @@ export class AgentBrainsRag implements INodeType {
                 description: 'The text to search for. When used as a tool, this is automatically filled by the AI model.',
             },
             {
+                displayName: 'Extended Response',
+                name: 'extendedResponse',
+                type: 'boolean',
+                default: true,
+                displayOptions: {
+                    show: {
+                        operation: ['image'],
+                    },
+                },
+                description: 'Whether to return the full API response. When disabled, only image URLs are returned.',
+            },
+            {
                 displayName: 'Tool Description',
                 name: 'toolDescription',
                 type: 'string',
@@ -240,8 +252,21 @@ export class AgentBrainsRag implements INodeType {
                     },
                 );
 
+                let result = response;
+
+                // For image operation with extendedResponse disabled, extract only image URLs
+                if (operation === 'image') {
+                    const extendedResponse = this.getNodeParameter('extendedResponse', i, true) as boolean;
+                    if (!extendedResponse) {
+                        const items = Array.isArray(response) ? response : (response as { results?: unknown[] }).results || [];
+                        result = (items as Array<{ metadata?: { url?: string };[key: string]: unknown }>)
+                            .map((item) => item.metadata?.url || '')
+                            .filter(Boolean);
+                    }
+                }
+
                 returnData.push({
-                    json: response,
+                    json: result,
                 });
             } catch (error) {
                 if (this.continueOnFail()) {
