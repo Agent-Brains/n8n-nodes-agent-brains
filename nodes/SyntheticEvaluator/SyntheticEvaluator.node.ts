@@ -6,6 +6,7 @@ import {
 	type INodeType,
 	type INodeTypeDescription,
 } from 'n8n-workflow';
+import { getEnvironmentDomain } from '../constants';
 
 interface ICredentials {
 	accessToken?: string;
@@ -39,17 +40,6 @@ interface IStatusResponse {
 	[key: string]: unknown;
 }
 
-
-const BASE_DOMAINS: Record<string, string> = {
-	sandbox: 'dwm-sndbx-ai.com',
-	staging: 'agent-brains.com',
-};
-
-function getApiBase(environment: string): string {
-	const domain = BASE_DOMAINS[environment] || BASE_DOMAINS.sandbox;
-	return `https://api.${domain}`;
-}
-
 const MAX_WAIT_SECONDS = 900; // 15 minutes
 const POLL_INTERVAL_SECONDS = 5; // 5 seconds
 
@@ -59,9 +49,6 @@ declare function setTimeout(
 	timeout?: number,
 	...args: unknown[]
 ): unknown;
-
-
-
 
 function parseHistory(
 	history: string | undefined | null,
@@ -99,7 +86,9 @@ export class SyntheticEvaluator implements INodeType {
 		loadOptions: {
 			async getSyntheticUsers(this: ILoadOptionsFunctions) {
 				const nodeOptions = this.getNodeParameter('options', {}) as { environment?: string };
-				const apiBase = getApiBase(nodeOptions.environment || 'sandbox');
+				// Updated to use shared constant helper
+				const domain = getEnvironmentDomain(nodeOptions.environment || 'sandbox');
+				const apiBase = `https://api.${domain}`;
 				const credentials = (await this.getCredentials(
 					'agentBrainsIntegrationApi',
 				)) as ICredentials;
@@ -263,8 +252,9 @@ export class SyntheticEvaluator implements INodeType {
 			);
 		}
 
-		const nodeOptions = this.getNodeParameter('options', 0, {}) as { environment?: string };
-		const apiBase = getApiBase(nodeOptions.environment || 'sandbox');
+		// Updated to use shared constant helper
+		const domain = getEnvironmentDomain((this.getNodeParameter('options', 0, {}) as { environment?: string }).environment || 'sandbox');
+		const apiBase = `https://api.${domain}`;
 
 		const authHeaders = {
 			Authorization: `token ${credentials.accessToken}`,

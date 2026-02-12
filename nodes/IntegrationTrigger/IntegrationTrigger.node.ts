@@ -8,15 +8,9 @@ import {
     LoggerProxy,
 } from 'n8n-workflow';
 
-const BASE_DOMAINS: Record<string, string> = {
-    sandbox: 'dwm-sndbx-ai.com',
-    staging: 'agent-brains.com',
-};
+import { getEnvironmentDomain } from '../constants';
 
-function getApiBase(environment: string): string {
-    const domain = BASE_DOMAINS[environment] || BASE_DOMAINS.sandbox;
-    return `https://admin-panel.${domain}/api/n8n`;
-}
+
 
 export class IntegrationTrigger implements INodeType {
     webhookMethods = {
@@ -25,7 +19,9 @@ export class IntegrationTrigger implements INodeType {
                 const workflow = this.getWorkflow();
                 const workflowId = workflow.id as string;
                 const nodeOptions = (this.getNodeParameter('options', 0) || {}) as { environment?: string };
-                const apiBase = getApiBase(nodeOptions.environment || 'sandbox');
+                // Updated to use shared constant helper
+                const domain = getEnvironmentDomain(nodeOptions.environment || 'sandbox');
+                const apiBase = `https://admin-panel.${domain}/api/n8n`;
                 try {
                     const checkUrl = `${apiBase}/registered/${encodeURIComponent(workflowId)}`;
                     const resp = await this.helpers.httpRequestWithAuthentication.call(this, 'agentBrainsIntegrationApi', {
@@ -47,7 +43,9 @@ export class IntegrationTrigger implements INodeType {
                 const workflowName = workflow.name as string;
                 const webhookUrl = this.getNodeWebhookUrl('default');
                 const nodeOptions = (this.getNodeParameter('options', 0) || {}) as { environment?: string };
-                const apiBase = getApiBase(nodeOptions.environment || 'sandbox');
+                // Updated to use shared constant helper
+                const domain = getEnvironmentDomain(nodeOptions.environment || 'sandbox');
+                const apiBase = `https://admin-panel.${domain}/api/n8n`;
                 try {
                     await this.helpers.httpRequestWithAuthentication.call(this, 'agentBrainsIntegrationApi', {
                         method: 'POST',

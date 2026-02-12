@@ -6,7 +6,7 @@ import {
     type ILoadOptionsFunctions,
     type INodePropertyOptions,
 } from 'n8n-workflow';
-
+import { getEnvironmentDomain } from '../constants';
 
 declare const console: {
     log(...args: unknown[]): void;
@@ -16,15 +16,6 @@ declare const console: {
     debug(...args: unknown[]): void;
 };
 
-const BASE_DOMAINS: Record<string, string> = {
-    sandbox: 'dwm-sndbx-ai.com',
-    staging: 'agent-brains.com',
-};
-
-function getApiBase(environment: string): string {
-    const domain = BASE_DOMAINS[environment] || BASE_DOMAINS.sandbox;
-    return `https://sds.${domain}/integration`;
-}
 
 const GLOBAL_INDEX_OPTION: INodePropertyOptions = { name: 'Global (All Documents)', value: 'general_helper_documents' };
 
@@ -96,7 +87,7 @@ export class AgentBrainsRag implements INodeType {
                 displayName: 'Query',
                 name: 'query',
                 type: 'string',
-                default: '={{ $json.chatInput }}',
+                default: '',
                 required: true,
                 placeholder: 'Search query',
                 description: 'The text to search for. When used as a tool, this is automatically filled by the AI model.',
@@ -173,7 +164,9 @@ export class AgentBrainsRag implements INodeType {
         loadOptions: {
             async getIndexes(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
                 const nodeOptions = this.getNodeParameter('options', {}) as { environment?: string };
-                const apiBase = getApiBase(nodeOptions.environment || 'sandbox');
+                // Updated to use shared constant helper
+                const domain = getEnvironmentDomain(nodeOptions.environment || 'sandbox');
+                const apiBase = `https://sds.${domain}/integration`;
                 try {
                     const response = await this.helpers.httpRequestWithAuthentication.call(
                         this,
@@ -204,7 +197,9 @@ export class AgentBrainsRag implements INodeType {
         const items = this.getInputData();
         const returnData: INodeExecutionData[] = [];
         const options0 = this.getNodeParameter('options', 0) as { environment?: string };
-        const apiBase = getApiBase(options0.environment || 'sandbox');
+        // Updated to use shared constant helper
+        const domain = getEnvironmentDomain(options0.environment || 'sandbox');
+        const apiBase = `https://sds.${domain}/integration`;
         const operation = this.getNodeParameter('operation', 0) as string;
 
         for (let i = 0; i < items.length; i++) {

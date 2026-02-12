@@ -28,15 +28,9 @@ enum Operation {
 	GetByAlias = 'getByAlias',
 }
 
-const BASE_DOMAINS: Record<string, string> = {
-	sandbox: 'dwm-sndbx-ai.com',
-	staging: 'agent-brains.com',
-};
+import { getEnvironmentDomain } from '../constants';
 
-function getApiBase(environment: string): string {
-	const domain = BASE_DOMAINS[environment] || BASE_DOMAINS.sandbox;
-	return `https://sds.${domain}/integration`;
-}
+
 
 
 
@@ -532,7 +526,9 @@ export class KnowledgeBase implements INodeType {
 		loadOptions: {
 			async getCategories(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				const nodeOptions = this.getNodeParameter('options', {}) as { environment?: string };
-				const apiBase = getApiBase(nodeOptions.environment || 'sandbox');
+				// Updated to use shared constant helper
+				const domain = getEnvironmentDomain(nodeOptions.environment || 'sandbox');
+				const apiBase = `https://sds.${domain}/integration`;
 				const responseData = await this.helpers.httpRequestWithAuthentication.call(
 					this,
 					'agentBrainsIntegrationApi',
@@ -596,7 +592,9 @@ export class KnowledgeBase implements INodeType {
 			},
 			async getCategoryAliases(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				const nodeOptions = this.getNodeParameter('options', {}) as { environment?: string };
-				const apiBase = getApiBase(nodeOptions.environment || 'sandbox');
+				// Updated to use shared constant helper
+				const domain = getEnvironmentDomain(nodeOptions.environment || 'sandbox');
+				const apiBase = `https://sds.${domain}/integration`;
 				const responseData = await this.helpers.httpRequestWithAuthentication.call(
 					this,
 					'agentBrainsIntegrationApi',
@@ -634,7 +632,8 @@ export class KnowledgeBase implements INodeType {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
 		const execOptions = this.getNodeParameter('options', 0, {}) as { environment?: string };
-		const apiBase = getApiBase(execOptions.environment || 'sandbox');
+		const domain = getEnvironmentDomain(execOptions.environment || 'sandbox');
+		const apiBase = `https://sds.${domain}/integration`;
 		const resource = this.getNodeParameter('resource', 0) as Resource;
 		const operation = this.getNodeParameter('operation', 0) as Operation;
 
