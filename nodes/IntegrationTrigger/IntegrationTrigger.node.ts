@@ -54,7 +54,7 @@ export class IntegrationTrigger implements INodeType {
                         body: {
                             workflowId,
                             workflowName,
-                            webhookUrl,
+                            webhookUrl: webhookUrl?.replace('/webhook-test/', '/webhook/'),
                         },
                     });
                     LoggerProxy.info('Webhook registration response');
