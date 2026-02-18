@@ -6,6 +6,7 @@ import {
 	type INodeType,
 	type INodeTypeDescription,
 } from 'n8n-workflow';
+import { getEnvironmentDomain } from '../constants';
 
 interface ICredentials {
 	accessToken?: string;
@@ -39,10 +40,6 @@ interface IStatusResponse {
 	[key: string]: unknown;
 }
 
-
-const API_BASE =
-	process.env.AGENT_BRAINS_API_BASE || 'https://api.agent-brains.com';
-
 const MAX_WAIT_SECONDS = 900; // 15 minutes
 const POLL_INTERVAL_SECONDS = 5; // 5 seconds
 
@@ -52,12 +49,6 @@ declare function setTimeout(
 	timeout?: number,
 	...args: unknown[]
 ): unknown;
-
-declare const process: {
-	env: {
-		[key: string]: string | undefined;
-	};
-};
 
 function parseHistory(
 	history: string | undefined | null,
@@ -94,6 +85,10 @@ export class SyntheticEvaluator implements INodeType {
 	methods = {
 		loadOptions: {
 			async getSyntheticUsers(this: ILoadOptionsFunctions) {
+				const nodeOptions = this.getNodeParameter('options', {}) as { environment?: string };
+				// Updated to use shared constant helper
+				const domain = getEnvironmentDomain(nodeOptions.environment || 'sandbox');
+				const apiBase = `https://api.${domain}`;
 				const credentials = (await this.getCredentials(
 					'agentBrainsIntegrationApi',
 				)) as ICredentials;
@@ -107,7 +102,7 @@ export class SyntheticEvaluator implements INodeType {
 
 				const usersResponse = await this.helpers.httpRequest({
 					method: 'GET',
-					url: `${API_BASE}/synthetic-users`,
+					url: `${apiBase}/synthetic-users`,
 					headers: {
 						Authorization: `token ${credentials.accessToken}`,
 					},
@@ -210,6 +205,34 @@ export class SyntheticEvaluator implements INodeType {
 				default:
 					'"Recommendation <= $1500", "Clear product link", "Promo explained/applied", "Shipping/returns clarified"',
 			},
+			{
+				displayName: 'Options',
+				name: 'options',
+				type: 'collection',
+				placeholder: 'Add Option',
+				default: {},
+				options: [
+					{
+						displayName: 'Environment',
+						name: 'environment',
+						type: 'options',
+						default: 'sandbox',
+						description: 'Select the environment to run requests against',
+						options: [
+							{
+								name: 'Sandbox',
+								value: 'sandbox',
+								description: 'Use the sandbox environment (dwm-sndbx-ai.com)',
+							},
+							{
+								name: 'Staging',
+								value: 'staging',
+								description: 'Use the staging environment (agent-brains.com)',
+							},
+						],
+					},
+				],
+			},
 		],
 		usableAsTool: true,
 	};
@@ -229,6 +252,10 @@ export class SyntheticEvaluator implements INodeType {
 			);
 		}
 
+		// Updated to use shared constant helper
+		const domain = getEnvironmentDomain((this.getNodeParameter('options', 0, {}) as { environment?: string }).environment || 'sandbox');
+		const apiBase = `https://api.${domain}`;
+
 		const authHeaders = {
 			Authorization: `token ${credentials.accessToken}`,
 		};
@@ -236,7 +263,7 @@ export class SyntheticEvaluator implements INodeType {
 		// Fetch configuration for orchestrator URLs
 		const configResponse = await this.helpers.httpRequest({
 			method: 'GET',
-			url: `${API_BASE}/configuration`,
+			url: `${apiBase}/configuration`,
 			json: true,
 		});
 
@@ -283,7 +310,7 @@ export class SyntheticEvaluator implements INodeType {
 
 			const syntheticUser = (await this.helpers.httpRequest({
 				method: 'GET',
-				url: `${API_BASE}/synthetic-users/${encodeURIComponent(
+				url: `${apiBase}/synthetic-users/${encodeURIComponent(
 					syntheticUserId,
 				)}`,
 				json: true,

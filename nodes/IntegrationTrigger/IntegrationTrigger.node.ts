@@ -8,7 +8,9 @@ import {
     LoggerProxy,
 } from 'n8n-workflow';
 
-const API_BASE = 'https://admin-panel.dwm-sndbx-ai.com/api/n8n';
+import { getEnvironmentDomain } from '../constants';
+
+
 
 export class IntegrationTrigger implements INodeType {
     webhookMethods = {
@@ -16,8 +18,12 @@ export class IntegrationTrigger implements INodeType {
             checkExists: async function (this: IHookFunctions): Promise<boolean> {
                 const workflow = this.getWorkflow();
                 const workflowId = workflow.id as string;
+                const nodeOptions = (this.getNodeParameter('options', 0) || {}) as { environment?: string };
+                // Updated to use shared constant helper
+                const domain = getEnvironmentDomain(nodeOptions.environment || 'sandbox');
+                const apiBase = `https://admin-panel.${domain}/api/n8n`;
                 try {
-                    const checkUrl = `${API_BASE}/registered/${encodeURIComponent(workflowId)}`;
+                    const checkUrl = `${apiBase}/registered/${encodeURIComponent(workflowId)}`;
                     const resp = await this.helpers.httpRequestWithAuthentication.call(this, 'agentBrainsIntegrationApi', {
                         method: 'GET',
                         url: checkUrl,
@@ -36,15 +42,19 @@ export class IntegrationTrigger implements INodeType {
                 const workflowId = workflow.id as string;
                 const workflowName = workflow.name as string;
                 const webhookUrl = this.getNodeWebhookUrl('default');
+                const nodeOptions = (this.getNodeParameter('options', 0) || {}) as { environment?: string };
+                // Updated to use shared constant helper
+                const domain = getEnvironmentDomain(nodeOptions.environment || 'sandbox');
+                const apiBase = `https://admin-panel.${domain}/api/n8n`;
                 try {
                     await this.helpers.httpRequestWithAuthentication.call(this, 'agentBrainsIntegrationApi', {
                         method: 'POST',
-                        url: `${API_BASE}/register`,
+                        url: `${apiBase}/register`,
                         json: true,
                         body: {
                             workflowId,
                             workflowName,
-                            webhookUrl,
+                            webhookUrl: webhookUrl?.replace('/webhook-test/', '/webhook/'),
                         },
                     });
                     LoggerProxy.info('Webhook registration response');
@@ -118,6 +128,34 @@ export class IntegrationTrigger implements INodeType {
                 ],
                 default: 'responseNode',
                 description: 'When and how to respond to the webhook',
+            },
+            {
+                displayName: 'Options',
+                name: 'options',
+                type: 'collection',
+                placeholder: 'Add Option',
+                default: {},
+                options: [
+                    {
+                        displayName: 'Environment',
+                        name: 'environment',
+                        type: 'options',
+                        default: 'sandbox',
+                        description: 'Select the environment to run requests against',
+                        options: [
+                            {
+                                name: 'Sandbox',
+                                value: 'sandbox',
+                                description: 'Use the sandbox environment (dwm-sndbx-ai.com)',
+                            },
+                            {
+                                name: 'Staging',
+                                value: 'staging',
+                                description: 'Use the staging environment (agent-brains.com)',
+                            },
+                        ],
+                    },
+                ],
             },
             {
                 displayName: 'Additional Headers',
