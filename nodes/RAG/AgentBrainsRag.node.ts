@@ -60,7 +60,7 @@ export class AgentBrainsRag implements INodeType {
                     {
                         name: 'Retrieve Image',
                         value: 'image',
-                        description: 'Retrieve images',
+                        description: 'Retrieve images from Core Image Index',
                         action: 'Retrieve image',
                     },
                 ],
