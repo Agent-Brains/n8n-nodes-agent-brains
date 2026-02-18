@@ -17,7 +17,7 @@ declare const console: {
 };
 
 
-const GLOBAL_INDEX_OPTION: INodePropertyOptions = { name: 'General Text Index (All Documents)', value: 'general_helper_documents' };
+const GLOBAL_INDEX_OPTION: INodePropertyOptions = { name: 'Core Text Index (All Documents)', value: 'general_helper_documents' };
 
 interface IIndex {
     _id: string;
