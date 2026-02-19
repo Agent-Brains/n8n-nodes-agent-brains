@@ -8,6 +8,7 @@ import {
 	type INodeType,
 	type INodeTypeDescription,
 } from 'n8n-workflow';
+import { getEnvironmentDomain } from '../constants';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -27,13 +28,6 @@ enum Operation {
 	GetByCategoryAlias = 'getByCategoryAlias',
 	GetByAlias = 'getByAlias',
 }
-
-import { getEnvironmentDomain } from '../constants';
-
-
-
-
-
 
 declare const console: {
 	log(message?: any, ...optionalParams: any[]): void;
@@ -861,6 +855,8 @@ function processResponse(
 			const limit = ctx.getNodeParameter('limit', i) as number;
 			itemsData = (itemsData as IDataObject[]).slice(0, limit);
 		}
+		// Special request: wrap list responses in an object
+		return [{ items: itemsData }];
 	}
 	return itemsData as IDataObject[];
 }
