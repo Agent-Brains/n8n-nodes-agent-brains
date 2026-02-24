@@ -18,6 +18,7 @@ enum Resource {
 	CategoryAlias = 'categoryAlias',
 	Attachment = 'attachment',
 	RelationshipType = 'relationshipType',
+	CompanyData = 'companyData',
 }
 
 enum Operation {
@@ -88,6 +89,11 @@ export class KnowledgeBase implements INodeType {
 						name: 'Relationship Types',
 						value: Resource.RelationshipType,
 						description: 'Types of relationships that can exist between entities',
+					},
+					{
+						name: 'Company Data',
+						value: Resource.CompanyData,
+						description: 'Retrieve company-level data and configuration as a single object',
 					},
 				],
 				default: Resource.Entity,
@@ -629,11 +635,23 @@ export class KnowledgeBase implements INodeType {
 		const domain = getEnvironmentDomain(execOptions.environment || 'sandbox');
 		const apiBase = `https://sds.${domain}/integration`;
 		const resource = this.getNodeParameter('resource', 0) as Resource;
-		const operation = this.getNodeParameter('operation', 0) as Operation;
 
 		for (let i = 0; i < items.length; i++) {
 			try {
 				console.log(`[AgentBrains Debug] Processing item ${i}`);
+
+				// Company Data is a fixed single-object fetch — no operation selector needed.
+				if (resource === Resource.CompanyData) {
+					const companyData = await handleCompanyData(this, apiBase);
+					const executionData = this.helpers.constructExecutionMetaData(
+						this.helpers.returnJsonArray([companyData as IDataObject]),
+						{ itemData: { item: i } },
+					);
+					returnData.push(...executionData);
+					continue;
+				}
+
+				const operation = this.getNodeParameter('operation', 0) as Operation;
 				let responseData: IDataObject | IDataObject[] = [];
 
 				if (resource === Resource.Entity) {
@@ -815,6 +833,18 @@ async function handleAttachment(
 	}
 
 	return [];
+}
+
+async function handleCompanyData(
+	ctx: IExecuteFunctions,
+	apiBase: string,
+): Promise<IDataObject> {
+	const response = await makeRequest(ctx, 'GET', `${apiBase}/helpers/company-info`);
+	// Always return a single object
+	if (Array.isArray(response)) {
+		return response[0] ?? {};
+	}
+	return response as IDataObject;
 }
 
 function processResponse(
