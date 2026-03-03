@@ -4,7 +4,7 @@
 #
 # This script:
 #   1. Runs `n8n-node release` which handles lint, build, version bump, git tag,
-#      npm publish (staging, via sed-patch), and GitHub release.
+#      npm publish (staging, via patch-env.js hook), and GitHub release.
 #   2. Then publishes a second `-dev` version targeting sandbox.
 
 set -euo pipefail
@@ -13,17 +13,10 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_DIR"
 
-CONSTANTS_JS="dist/nodes/constants.js"
-
 # ── 1. Staging release via release-it ─────────────────────────
-# n8n-node release runs: lint → build → version bump → changelog → npm publish → git tag → push
-# We hook into the process by patching constants.js after build but before publish.
-# The `prepublishOnly` script is satisfied by RELEASE_MODE=true set by n8n-node release.
+# n8n-node release runs: lint → build → patch-env(staging) → version bump → npm publish → git tag → push
 echo "🚀 Starting staging release via release-it..."
 npm run release
-
-# After release-it finishes, the version is already bumped and published.
-# Patch is needed in the after:bump hook, so we add a .release-it.json config.
 
 # ── 2. Sandbox (-dev) follow-up publish ───────────────────────
 BASE_VERSION=$(node -p "require('./package.json').version")
@@ -34,8 +27,9 @@ echo "🔨 Building sandbox version ($DEV_VERSION)..."
 # Bump to -dev version (no git changes)
 npm version "$DEV_VERSION" --no-git-tag-version --allow-same-version
 
-# Rebuild with sandbox default (no patching needed)
+# Rebuild and patch for sandbox
 npm run build
+node scripts/patch-env.js sandbox
 
 echo "🚀 Publishing $DEV_VERSION (sandbox)..."
 RELEASE_MODE=true npm publish --tag dev
