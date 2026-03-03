@@ -6,7 +6,7 @@ import {
     type ILoadOptionsFunctions,
     type INodePropertyOptions,
 } from 'n8n-workflow';
-import { getEnvironmentDomain } from '../constants';
+import { DOMAIN } from '../constants';
 
 declare const console: {
     log(...args: unknown[]): void;
@@ -119,25 +119,7 @@ export class AgentBrainsRag implements INodeType {
                 placeholder: 'Add Option',
                 default: {},
                 options: [
-                    {
-                        displayName: 'Environment',
-                        name: 'environment',
-                        type: 'options',
-                        default: 'sandbox',
-                        description: 'Select the environment to run requests against',
-                        options: [
-                            {
-                                name: 'Sandbox',
-                                value: 'sandbox',
-                                description: 'Use the sandbox environment (dwm-sndbx-ai.com)',
-                            },
-                            {
-                                name: 'Staging',
-                                value: 'staging',
-                                description: 'Use the staging environment (agent-brains.com)',
-                            },
-                        ],
-                    },
+
                     {
                         displayName: 'Top K',
                         name: 'topK',
@@ -163,10 +145,7 @@ export class AgentBrainsRag implements INodeType {
     methods = {
         loadOptions: {
             async getIndexes(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-                const nodeOptions = this.getNodeParameter('options', {}) as { environment?: string };
-                // Updated to use shared constant helper
-                const domain = getEnvironmentDomain(nodeOptions.environment || 'sandbox');
-                const apiBase = `https://sds.${domain}/integration`;
+                const apiBase = `https://sds.${DOMAIN}/integration`;
                 try {
                     const response = await this.helpers.httpRequestWithAuthentication.call(
                         this,
@@ -196,10 +175,7 @@ export class AgentBrainsRag implements INodeType {
     async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
         const items = this.getInputData();
         const returnData: INodeExecutionData[] = [];
-        const options0 = this.getNodeParameter('options', 0) as { environment?: string };
-        // Updated to use shared constant helper
-        const domain = getEnvironmentDomain(options0.environment || 'sandbox');
-        const apiBase = `https://sds.${domain}/integration`;
+        const apiBase = `https://sds.${DOMAIN}/integration`;
         const operation = this.getNodeParameter('operation', 0) as string;
 
         for (let i = 0; i < items.length; i++) {
@@ -208,7 +184,6 @@ export class AgentBrainsRag implements INodeType {
                 const options = this.getNodeParameter('options', i) as {
                     topK?: number;
                     metadata?: string | object;
-                    environment?: string;
                 };
 
                 let namespace: string;

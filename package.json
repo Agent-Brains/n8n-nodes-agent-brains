@@ -30,12 +30,13 @@
 		"url": "git+https://github.com/Agent-Brains/n8n-nodes-agent-brains.git"
 	},
 	"scripts": {
-		"build": "n8n-node build",
+		"build": "TARGET_ENV=${TARGET_ENV:-sandbox} n8n-node build",
 		"build:watch": "tsc --watch",
 		"dev": "n8n-node dev",
 		"lint": "n8n-node lint",
 		"lint:fix": "n8n-node lint --fix",
 		"release": "n8n-node release",
+		"release:all": "bash scripts/release-all.sh",
 		"prepublishOnly": "n8n-node prerelease"
 	},
 	"files": [

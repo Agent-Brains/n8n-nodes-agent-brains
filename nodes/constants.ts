@@ -1,13 +1,15 @@
-export const BASE_DOMAINS: Record<string, string> = {
+declare const process: { env: Record<string, string | undefined> };
+const TARGET_ENV = (process.env.TARGET_ENV as 'sandbox' | 'staging') || 'sandbox';
+
+const DOMAINS: Record<string, string> = {
     sandbox: 'dwm-sndbx-ai.com',
     staging: 'agent-brains.com',
 };
 
-export function getEnvironmentDomain(environment: string): string {
-    return BASE_DOMAINS[environment] || BASE_DOMAINS.sandbox;
-}
-// Synthetic QA 
-export const ADMIN_PANEL_EXTERNAL_BASE = 'https://admin-panel.dwm-sndbx-ai.com';
+export const DOMAIN = DOMAINS[TARGET_ENV] || DOMAINS.sandbox;
+
+// Synthetic QA
+export const ADMIN_PANEL_EXTERNAL_BASE = `https://admin-panel.${DOMAIN}`;
 
 // Polling defaults
 export const SYNTHETIC_QA_MAX_WAIT_SECONDS = 900; // 15 minutes

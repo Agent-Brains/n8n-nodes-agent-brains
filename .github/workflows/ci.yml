@@ -42,15 +42,30 @@ jobs:
       - name: Run lint
         run: 'npm run lint'
 
-      - name: Run build
+      - name: Build
         run: 'npm run build'
 
       - name: Run release
         run: 'npm run release'
 
-      - name: Publish to github packages
+      # Staging publish: patch default to 'staging', publish main version
+      - name: Publish staging to GitHub Packages
         if: ${{ github.ref_type != 'tag' }}
-        run: 'npm publish'
+        run: |
+          sed -i "s/|| 'sandbox'/|| 'staging'/" dist/nodes/constants.js
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Sandbox-dev publish: rebuild with sandbox default, publish -dev version
+      - name: Publish sandbox-dev to GitHub Packages
+        if: ${{ github.ref_type != 'tag' }}
+        run: |
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          npm version "${BASE_VERSION}-dev" --no-git-tag-version --allow-same-version
+          npm run build
+          npm publish --tag dev
+          npm version "$BASE_VERSION" --no-git-tag-version --allow-same-version
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -83,7 +98,23 @@ jobs:
       
       - name: Run release
         run: 'npm run release'
-      - name: Publish to npm
-        run: 'npm publish'
+
+      # Staging publish: build, patch to staging, publish main version
+      - name: Publish staging to npm
+        run: |
+          npm run build
+          sed -i "s/|| 'sandbox'/|| 'staging'/" dist/nodes/constants.js
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Sandbox-dev publish: rebuild with sandbox default, publish -dev version
+      - name: Publish sandbox-dev to npm
+        run: |
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          npm version "${BASE_VERSION}-dev" --no-git-tag-version --allow-same-version
+          npm run build
+          npm publish --tag dev
+          npm version "$BASE_VERSION" --no-git-tag-version --allow-same-version
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

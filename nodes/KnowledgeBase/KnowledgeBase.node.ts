@@ -8,7 +8,7 @@ import {
 	type INodeType,
 	type INodeTypeDescription,
 } from 'n8n-workflow';
-import { getEnvironmentDomain } from '../constants';
+import { DOMAIN } from '../constants';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -490,34 +490,7 @@ export class KnowledgeBase implements INodeType {
 					},
 				],
 			},
-			{
-				displayName: 'Options',
-				name: 'options',
-				type: 'collection',
-				placeholder: 'Add Option',
-				default: {},
-				options: [
-					{
-						displayName: 'Environment',
-						name: 'environment',
-						type: 'options',
-						default: 'sandbox',
-						description: 'Select the environment to run requests against',
-						options: [
-							{
-								name: 'Sandbox',
-								value: 'sandbox',
-								description: 'Use the sandbox environment (dwm-sndbx-ai.com)',
-							},
-							{
-								name: 'Staging',
-								value: 'staging',
-								description: 'Use the staging environment (agent-brains.com)',
-							},
-						],
-					},
-				],
-			},
+
 		],
 		usableAsTool: true,
 	};
@@ -525,10 +498,7 @@ export class KnowledgeBase implements INodeType {
 	methods = {
 		loadOptions: {
 			async getCategories(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				const nodeOptions = this.getNodeParameter('options', {}) as { environment?: string };
-				// Updated to use shared constant helper
-				const domain = getEnvironmentDomain(nodeOptions.environment || 'sandbox');
-				const apiBase = `https://sds.${domain}/integration`;
+				const apiBase = `https://sds.${DOMAIN}/integration`;
 				const responseData = await this.helpers.httpRequestWithAuthentication.call(
 					this,
 					'agentBrainsIntegrationApi',
@@ -591,10 +561,7 @@ export class KnowledgeBase implements INodeType {
 				return options;
 			},
 			async getCategoryAliases(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				const nodeOptions = this.getNodeParameter('options', {}) as { environment?: string };
-				// Updated to use shared constant helper
-				const domain = getEnvironmentDomain(nodeOptions.environment || 'sandbox');
-				const apiBase = `https://sds.${domain}/integration`;
+				const apiBase = `https://sds.${DOMAIN}/integration`;
 				const responseData = await this.helpers.httpRequestWithAuthentication.call(
 					this,
 					'agentBrainsIntegrationApi',
@@ -631,9 +598,7 @@ export class KnowledgeBase implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
-		const execOptions = this.getNodeParameter('options', 0, {}) as { environment?: string };
-		const domain = getEnvironmentDomain(execOptions.environment || 'sandbox');
-		const apiBase = `https://sds.${domain}/integration`;
+		const apiBase = `https://sds.${DOMAIN}/integration`;
 		const resource = this.getNodeParameter('resource', 0) as Resource;
 
 		for (let i = 0; i < items.length; i++) {
