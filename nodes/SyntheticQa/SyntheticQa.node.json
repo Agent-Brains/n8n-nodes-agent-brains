@@ -1,5 +1,5 @@
 {
-	"node": "n8n-nodes-agent-brains.syntheticEvaluator",
+	"node": "n8n-nodes-agent-brains.syntheticQa",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
 	"categories": ["Utility", "Development", "AI"],
