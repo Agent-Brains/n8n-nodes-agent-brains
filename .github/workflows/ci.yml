@@ -48,7 +48,7 @@ jobs:
       - name: Run release
         run: 'npm run release'
 
-      # Staging publish: patch default to 'staging', publish main version
+      # Staging publish: patch constants to staging, then publish main version
       - name: Publish staging to GitHub Packages
         if: ${{ github.ref_type != 'tag' }}
         run: |
@@ -57,7 +57,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Sandbox-dev publish: rebuild with sandbox default, publish -dev version
+      # Sandbox-dev publish: rebuild (sandbox default), publish as -dev prerelease
       - name: Publish sandbox-dev to GitHub Packages
         if: ${{ github.ref_type != 'tag' }}
         run: |
@@ -108,7 +108,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # Sandbox-dev publish: rebuild with sandbox default, publish -dev version
+      # Sandbox-dev publish: rebuild (sandbox default), publish as -dev prerelease
       - name: Publish sandbox-dev to npm
         run: |
           BASE_VERSION=$(node -p "require('./package.json').version")

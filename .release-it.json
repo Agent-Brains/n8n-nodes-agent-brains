@@ -1,0 +1,5 @@
+{
+	"hooks": {
+		"after:init": "sed -i.bak \"s/|| 'sandbox'/|| 'staging'/\" dist/nodes/constants.js && rm -f dist/nodes/constants.js.bak"
+	}
+}

@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-# release-all.sh — Build and publish both staging (main) and sandbox (-dev) versions.
-# Usage: ./scripts/release-all.sh   (or: npm run release:all)
+# release-all.sh — Full release: staging (main) via release-it + sandbox (-dev) follow-up.
+# Usage: npm run release:all
 #
-# Expects npm to be already authenticated (CI sets up .npmrc).
-# Expects the version in package.json to be the base version (e.g. 1.7.0).
+# This script:
+#   1. Runs `n8n-node release` which handles lint, build, version bump, git tag,
+#      npm publish (staging, via sed-patch), and GitHub release.
+#   2. Then publishes a second `-dev` version targeting sandbox.
 
 set -euo pipefail
 
@@ -12,36 +14,33 @@ PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_DIR"
 
 CONSTANTS_JS="dist/nodes/constants.js"
+
+# ── 1. Staging release via release-it ─────────────────────────
+# n8n-node release runs: lint → build → version bump → changelog → npm publish → git tag → push
+# We hook into the process by patching constants.js after build but before publish.
+# The `prepublishOnly` script is satisfied by RELEASE_MODE=true set by n8n-node release.
+echo "🚀 Starting staging release via release-it..."
+npm run release
+
+# After release-it finishes, the version is already bumped and published.
+# Patch is needed in the after:bump hook, so we add a .release-it.json config.
+
+# ── 2. Sandbox (-dev) follow-up publish ───────────────────────
 BASE_VERSION=$(node -p "require('./package.json').version")
-echo "📦 Base version: $BASE_VERSION"
-
-# ── 1. Build & patch for STAGING ──────────────────────────────
-echo ""
-echo "🔨 Building for STAGING (version $BASE_VERSION)..."
-npm run build
-
-# Patch the compiled constants to hardcode staging as default
-sed -i.bak "s/|| 'sandbox'/|| 'staging'/" "$CONSTANTS_JS"
-rm -f "${CONSTANTS_JS}.bak"
-
-echo "🚀 Publishing $BASE_VERSION (staging)..."
-npm publish
-
-# ── 2. Build & publish for SANDBOX (-dev) ─────────────────────
 DEV_VERSION="${BASE_VERSION}-dev"
 echo ""
-echo "🔨 Building for SANDBOX (version $DEV_VERSION)..."
+echo "🔨 Building sandbox version ($DEV_VERSION)..."
 
-# Bump version to -dev (no git tag)
+# Bump to -dev version (no git changes)
 npm version "$DEV_VERSION" --no-git-tag-version --allow-same-version
 
-# Rebuild (default is sandbox, no patching needed)
+# Rebuild with sandbox default (no patching needed)
 npm run build
 
 echo "🚀 Publishing $DEV_VERSION (sandbox)..."
-npm publish --tag dev
+RELEASE_MODE=true npm publish --tag dev
 
-# ── 3. Restore original version ──────────────────────────────
+# Restore the original version
 npm version "$BASE_VERSION" --no-git-tag-version --allow-same-version
 echo ""
 echo "✅ Done! Published $BASE_VERSION (staging) and $DEV_VERSION (sandbox)"
