@@ -255,10 +255,10 @@ export class KnowledgeBase implements INodeType {
 				description: 'The ID of the resource',
 			},
 			{
-				displayName: 'Category Name or ID',
+				displayName: 'Category Names or IDs',
 				name: 'categoryId',
-				type: 'options',
-				default: '',
+				type: 'multiOptions',
+				default: [],
 				typeOptions: {
 					loadOptionsMethod: 'getCategories',
 				},
@@ -268,7 +268,7 @@ export class KnowledgeBase implements INodeType {
 						operation: [Operation.GetAll],
 					},
 				},
-				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+				description: 'Choose from the list, or specify IDs using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
 			},
 			{
 				displayName: 'Category Type Name or ID',
@@ -720,11 +720,11 @@ async function handleEntity(
 ): Promise<IDataObject | IDataObject[]> {
 	const operations: { [key: string]: () => Promise<IDataObject | IDataObject[]> } = {
 		[Operation.GetAll]: async () => {
-			const categoryId = ctx.getNodeParameter('categoryId', i, '') as string;
+			const categoryIds = ctx.getNodeParameter('categoryId', i, []) as string[];
 			const search = ctx.getNodeParameter('search', i, '') as string;
 			const additionalFields = ctx.getNodeParameter('additionalFields', i) as IDataObject;
 			const qs: IDataObject = { ...additionalFields };
-			if (categoryId) qs.categoryId = categoryId;
+			if (categoryIds.length > 0) qs.categoryId = categoryIds.join(',');
 			if (search) qs.search = search;
 			return await makeRequest(ctx, 'GET', `${apiBase}/entities`, qs);
 		},
