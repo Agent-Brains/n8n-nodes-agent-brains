@@ -24,6 +24,7 @@ enum Resource {
 enum Operation {
 	Get = 'get',
 	GetAll = 'getAll',
+	GetAllDocuments = 'getAllDocuments',
 	GetRelationships = 'getRelationships',
 	GetAttachments = 'getAttachments',
 	GetByCategoryAlias = 'getByCategoryAlias',
@@ -133,6 +134,12 @@ export class KnowledgeBase implements INodeType {
 						value: Operation.GetByCategoryAlias,
 						description: 'List entities by category type',
 						action: 'List entities by category type',
+					},
+					{
+						name: 'Get All Documents',
+						value: Operation.GetAllDocuments,
+						description: 'Retrieve all documents from the knowledge base',
+						action: 'Get all documents',
 					},
 				],
 				default: Operation.GetAll,
@@ -320,6 +327,7 @@ export class KnowledgeBase implements INodeType {
 						resource: [Resource.Entity, Resource.Category, Resource.CategoryAlias, Resource.Attachment, Resource.RelationshipType],
 						operation: [
 							Operation.GetAll,
+							Operation.GetAllDocuments,
 							Operation.GetByCategoryAlias,
 							Operation.GetByAlias,
 							Operation.GetRelationships,
@@ -339,6 +347,7 @@ export class KnowledgeBase implements INodeType {
 						resource: [Resource.Entity, Resource.Category, Resource.CategoryAlias, Resource.Attachment, Resource.RelationshipType],
 						operation: [
 							Operation.GetAll,
+							Operation.GetAllDocuments,
 							Operation.GetByCategoryAlias,
 							Operation.GetByAlias,
 							Operation.GetRelationships,
@@ -408,6 +417,20 @@ export class KnowledgeBase implements INodeType {
 						description: 'Filters entities by one or more tags (comma-separated)',
 					},
 				],
+			},
+			// Operations for entity: getAllDocuments
+			{
+				displayName: 'Merge Documents',
+				name: 'mergeDocuments',
+				type: 'boolean',
+				default: false,
+				displayOptions: {
+					show: {
+						resource: [Resource.Entity],
+						operation: [Operation.GetAllDocuments],
+					},
+				},
+				description: 'Whether to merge all document contents into a single combined output',
 			},
 			// Operations for category: getAll
 			{
@@ -631,7 +654,27 @@ export class KnowledgeBase implements INodeType {
 					responseData = await handleRelationshipType(this, operation, apiBase);
 				}
 
-				const itemsData = processResponse(responseData, operation, this, i);
+				let itemsData = processResponse(responseData, operation, this, i);
+
+				// Merge documents if the toggle is enabled
+				if (resource === Resource.Entity && operation === Operation.GetAllDocuments) {
+					const mergeDocuments = this.getNodeParameter('mergeDocuments', i, false) as boolean;
+					if (mergeDocuments) {
+						// Unwrap the { items: [...] } wrapper added by processResponse
+						const docs = Array.isArray(itemsData[0]?.items) ? (itemsData[0].items as IDataObject[]) : itemsData;
+						const mergedContent = docs
+							.map((doc: IDataObject) => {
+								const parts: string[] = [];
+								if (doc.name) parts.push(`## ${doc.name}`);
+								if (doc.description) parts.push(String(doc.description));
+								if (doc.details) parts.push(String(doc.details));
+								return parts.join('\n\n');
+							})
+							.filter((text: string) => text.length > 0)
+							.join('\n\n---\n\n');
+						itemsData = [{ mergedContent, documentCount: docs.length }];
+					}
+				}
 
 				const executionData = this.helpers.constructExecutionMetaData(
 					this.helpers.returnJsonArray(itemsData),
@@ -714,6 +757,9 @@ async function handleEntity(
 			const qs: IDataObject = { ...additionalFields };
 			if (search) qs.search = search;
 			return await makeRequest(ctx, 'GET', `${apiBase}/entities/${categoryAlias}`, qs);
+		},
+		[Operation.GetAllDocuments]: async () => {
+			return await makeRequest(ctx, 'GET', `${apiBase}/entities`);
 		},
 	};
 
@@ -839,6 +885,7 @@ function processResponse(
 	if (
 		[
 			Operation.GetAll,
+			Operation.GetAllDocuments,
 			Operation.GetRelationships,
 			Operation.GetAttachments,
 			Operation.GetByCategoryAlias,
