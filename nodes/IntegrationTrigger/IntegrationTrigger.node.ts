@@ -164,7 +164,7 @@ export class IntegrationTrigger implements INodeType {
                 },
             },
         ],
-        usableAsTool: true,
+        usableAsTool: undefined,
     };
 
     async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
