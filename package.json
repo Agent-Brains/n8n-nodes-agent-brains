@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-agent-brains",
-	"version": "1.7.2",
+	"version": "1.7.3",
 	"description": "AgentBrains nodes for n8n to integrate workflows, production webhooks, and Synthetic User validation with the AgentBrains platform.",
 	"license": "MIT",
 	"homepage": "",
