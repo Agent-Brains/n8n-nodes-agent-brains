@@ -92,7 +92,7 @@ function parseReportText(reportText: unknown): {
 	const title = idx < lines.length ? lines[idx].trim() : null;
 
 	const headingRegex = /^[^\w]*\s*\d+\)\s+.+$/; // e.g. "🧾 1) Snapshot"
-	const bulletRegex = /^[•\-\*]\s+/;
+	const bulletRegex = /^[•\-*]\s+/;
 
 	const isUnderline = (line: string) => /^=+$/.test(line) || /^-+$/.test(line);
 
@@ -165,11 +165,13 @@ async function externalRequest<T>(
 				},
 			},
 		)) as T;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} catch (err: any) {
 		const status = err?.statusCode ?? err?.response?.status ?? 'unknown';
 		const respBody = err?.response?.body ?? err?.body ?? err?.message ?? err;
 
 		throw new NodeOperationError(
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			(ctx as any).getNode(),
 			`External request failed (HTTP ${status})
 URL: ${opts.url}
@@ -216,15 +218,14 @@ export class SyntheticQa implements INodeType {
 		outputs: ['main'],
 		properties: [
 			{
-				displayName: 'Select Synthetic QA',
+				displayName: 'Select Synthetic QA Name or ID',
 				name: 'syntheticUserId',
 				type: 'options',
 				typeOptions: {
 					loadOptionsMethod: 'getSyntheticUsers',
 				},
 				default: '',
-				description:
-					'Select a Synthetic QA for this test run. To set up a new QA please visit the Agent Brains platform.',
+				description: 'Select a Synthetic QA for this test run. To set up a new QA please visit the Agent Brains platform. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 			},
 			{
 				displayName: 'Choose Amount of Test Conversations',
@@ -235,22 +236,22 @@ export class SyntheticQa implements INodeType {
 					minValue: 1,
 					numberPrecision: 0,
 				},
-				description: 'How many conversations to run for this synthetic test.',
+				description: 'How many conversations to run for this synthetic test',
 			},
 			{
 				displayName: 'Conversation Quality Tests',
 				name: 'scoring',
 				type: 'multiOptions',
 				default: ['Human-free Issue Handling', 'Customers Mood Change'],
-				description: 'Which behaviors should be evaluated and scored.',
+				description: 'Which behaviors should be evaluated and scored',
 				options: [
-					{ name: 'Information Completeness', value: 'Information Completeness' },
-					{ name: 'On Task', value: 'On Task' },
-					{ name: 'Objection Handling', value: 'Objection Handling' },
-					{ name: 'Problem Solving', value: 'Problem Solving' },
-					{ name: 'Making a Sale', value: 'Making a Sale' },
 					{ name: 'Customers Mood Change', value: 'Customers Mood Change' },
-					{ name: 'Human-free Issue Handling', value: 'Human-free Issue Handling' },
+					{ name: 'Human-Free Issue Handling', value: 'Human-free Issue Handling' },
+					{ name: 'Information Completeness', value: 'Information Completeness' },
+					{ name: 'Making a Sale', value: 'Making a Sale' },
+					{ name: 'Objection Handling', value: 'Objection Handling' },
+					{ name: 'On Task', value: 'On Task' },
+					{ name: 'Problem Solving', value: 'Problem Solving' },
 				],
 			},
 			{
@@ -258,7 +259,7 @@ export class SyntheticQa implements INodeType {
 				name: 'showAdvanced',
 				type: 'boolean',
 				default: false,
-				description: 'Show optional advanced settings (not required).',
+				description: 'Whether to show optional advanced settings (not required)',
 			},
 			{
 				displayName: 'Conversation Goals',
@@ -266,7 +267,7 @@ export class SyntheticQa implements INodeType {
 				type: 'string',
 				default: '',
 				placeholder: 'e.g. Ask about delivery time to California',
-				description: 'If provided, these goals will be used across all conversations.',
+				description: 'If provided, these goals will be used across all conversations',
 				displayOptions: { show: { showAdvanced: [true] } },
 			},
 			{
@@ -275,8 +276,7 @@ export class SyntheticQa implements INodeType {
 				type: 'string',
 				default: '',
 				placeholder: 'e.g. Try coupon XMAS10',
-				description:
-					'If provided, the synthetic user will try to negotiate / apply promotions during the conversations.',
+				description: 'If provided, the synthetic user will try to negotiate / apply promotions during the conversations',
 				displayOptions: { show: { showAdvanced: [true] } },
 			},
 		],
@@ -354,6 +354,7 @@ export class SyntheticQa implements INodeType {
 				secondaryObjectives = normalized.secondary;
 			}
 
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const startResp = await externalRequest<any>(this, {
 				method: 'POST',
 				url: EXTERNAL_TEST_RUNS_START_URL,
@@ -414,6 +415,7 @@ export class SyntheticQa implements INodeType {
 				score: t.score,
 			}));
 
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const reportText = (completedDoc as any)?.report?.text ?? null;
 			const reportParsed = parseReportText(reportText);
 

@@ -8,7 +8,7 @@ import {
     LoggerProxy,
 } from 'n8n-workflow';
 
-import { getEnvironmentDomain } from '../constants';
+import { DOMAIN } from '../constants';
 
 
 
@@ -18,10 +18,7 @@ export class IntegrationTrigger implements INodeType {
             checkExists: async function (this: IHookFunctions): Promise<boolean> {
                 const workflow = this.getWorkflow();
                 const workflowId = workflow.id as string;
-                const nodeOptions = (this.getNodeParameter('options', 0) || {}) as { environment?: string };
-                // Updated to use shared constant helper
-                const domain = getEnvironmentDomain(nodeOptions.environment || 'sandbox');
-                const apiBase = `https://admin-panel.${domain}/api/n8n`;
+                const apiBase = `https://admin-panel.${DOMAIN}/api/n8n`;
                 try {
                     const checkUrl = `${apiBase}/registered/${encodeURIComponent(workflowId)}`;
                     const resp = await this.helpers.httpRequestWithAuthentication.call(this, 'agentBrainsIntegrationApi', {
@@ -42,10 +39,7 @@ export class IntegrationTrigger implements INodeType {
                 const workflowId = workflow.id as string;
                 const workflowName = workflow.name as string;
                 const webhookUrl = this.getNodeWebhookUrl('default');
-                const nodeOptions = (this.getNodeParameter('options', 0) || {}) as { environment?: string };
-                // Updated to use shared constant helper
-                const domain = getEnvironmentDomain(nodeOptions.environment || 'sandbox');
-                const apiBase = `https://admin-panel.${domain}/api/n8n`;
+                const apiBase = `https://admin-panel.${DOMAIN}/api/n8n`;
                 try {
                     await this.helpers.httpRequestWithAuthentication.call(this, 'agentBrainsIntegrationApi', {
                         method: 'POST',
@@ -135,27 +129,7 @@ export class IntegrationTrigger implements INodeType {
                 type: 'collection',
                 placeholder: 'Add Option',
                 default: {},
-                options: [
-                    {
-                        displayName: 'Environment',
-                        name: 'environment',
-                        type: 'options',
-                        default: 'sandbox',
-                        description: 'Select the environment to run requests against',
-                        options: [
-                            {
-                                name: 'Sandbox',
-                                value: 'sandbox',
-                                description: 'Use the sandbox environment (dwm-sndbx-ai.com)',
-                            },
-                            {
-                                name: 'Staging',
-                                value: 'staging',
-                                description: 'Use the staging environment (agent-brains.com)',
-                            },
-                        ],
-                    },
-                ],
+                options: [],
             },
             {
                 displayName: 'Additional Headers',

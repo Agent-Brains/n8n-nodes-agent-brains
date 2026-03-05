@@ -8,7 +8,7 @@ import {
 	type INodeType,
 	type INodeTypeDescription,
 } from 'n8n-workflow';
-import { getEnvironmentDomain } from '../constants';
+import { DOMAIN } from '../constants';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -24,6 +24,7 @@ enum Resource {
 enum Operation {
 	Get = 'get',
 	GetAll = 'getAll',
+	GetAllDocuments = 'getAllDocuments',
 	GetRelationships = 'getRelationships',
 	GetAttachments = 'getAttachments',
 	GetByCategoryAlias = 'getByCategoryAlias',
@@ -133,6 +134,12 @@ export class KnowledgeBase implements INodeType {
 						value: Operation.GetByCategoryAlias,
 						description: 'List entities by category type',
 						action: 'List entities by category type',
+					},
+					{
+						name: 'Get All Documents',
+						value: Operation.GetAllDocuments,
+						description: 'Retrieve all documents from the knowledge base',
+						action: 'Get all documents',
 					},
 				],
 				default: Operation.GetAll,
@@ -255,10 +262,10 @@ export class KnowledgeBase implements INodeType {
 				description: 'The ID of the resource',
 			},
 			{
-				displayName: 'Category Name or ID',
+				displayName: 'Category Names or IDs',
 				name: 'categoryId',
-				type: 'options',
-				default: '',
+				type: 'multiOptions',
+				default: [],
 				typeOptions: {
 					loadOptionsMethod: 'getCategories',
 				},
@@ -268,7 +275,7 @@ export class KnowledgeBase implements INodeType {
 						operation: [Operation.GetAll],
 					},
 				},
-				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+				description: 'Choose from the list, or specify IDs using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
 			},
 			{
 				displayName: 'Category Type Name or ID',
@@ -320,6 +327,7 @@ export class KnowledgeBase implements INodeType {
 						resource: [Resource.Entity, Resource.Category, Resource.CategoryAlias, Resource.Attachment, Resource.RelationshipType],
 						operation: [
 							Operation.GetAll,
+							Operation.GetAllDocuments,
 							Operation.GetByCategoryAlias,
 							Operation.GetByAlias,
 							Operation.GetRelationships,
@@ -339,6 +347,7 @@ export class KnowledgeBase implements INodeType {
 						resource: [Resource.Entity, Resource.Category, Resource.CategoryAlias, Resource.Attachment, Resource.RelationshipType],
 						operation: [
 							Operation.GetAll,
+							Operation.GetAllDocuments,
 							Operation.GetByCategoryAlias,
 							Operation.GetByAlias,
 							Operation.GetRelationships,
@@ -408,6 +417,20 @@ export class KnowledgeBase implements INodeType {
 						description: 'Filters entities by one or more tags (comma-separated)',
 					},
 				],
+			},
+			// Operations for entity: getAllDocuments
+			{
+				displayName: 'Merge Documents',
+				name: 'mergeDocuments',
+				type: 'boolean',
+				default: false,
+				displayOptions: {
+					show: {
+						resource: [Resource.Entity],
+						operation: [Operation.GetAllDocuments],
+					},
+				},
+				description: 'Whether to merge all document contents into a single combined output',
 			},
 			// Operations for category: getAll
 			{
@@ -490,34 +513,7 @@ export class KnowledgeBase implements INodeType {
 					},
 				],
 			},
-			{
-				displayName: 'Options',
-				name: 'options',
-				type: 'collection',
-				placeholder: 'Add Option',
-				default: {},
-				options: [
-					{
-						displayName: 'Environment',
-						name: 'environment',
-						type: 'options',
-						default: 'sandbox',
-						description: 'Select the environment to run requests against',
-						options: [
-							{
-								name: 'Sandbox',
-								value: 'sandbox',
-								description: 'Use the sandbox environment (dwm-sndbx-ai.com)',
-							},
-							{
-								name: 'Staging',
-								value: 'staging',
-								description: 'Use the staging environment (agent-brains.com)',
-							},
-						],
-					},
-				],
-			},
+
 		],
 		usableAsTool: true,
 	};
@@ -525,10 +521,7 @@ export class KnowledgeBase implements INodeType {
 	methods = {
 		loadOptions: {
 			async getCategories(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				const nodeOptions = this.getNodeParameter('options', {}) as { environment?: string };
-				// Updated to use shared constant helper
-				const domain = getEnvironmentDomain(nodeOptions.environment || 'sandbox');
-				const apiBase = `https://sds.${domain}/integration`;
+				const apiBase = `https://sds.${DOMAIN}/integration`;
 				const responseData = await this.helpers.httpRequestWithAuthentication.call(
 					this,
 					'agentBrainsIntegrationApi',
@@ -591,10 +584,7 @@ export class KnowledgeBase implements INodeType {
 				return options;
 			},
 			async getCategoryAliases(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				const nodeOptions = this.getNodeParameter('options', {}) as { environment?: string };
-				// Updated to use shared constant helper
-				const domain = getEnvironmentDomain(nodeOptions.environment || 'sandbox');
-				const apiBase = `https://sds.${domain}/integration`;
+				const apiBase = `https://sds.${DOMAIN}/integration`;
 				const responseData = await this.helpers.httpRequestWithAuthentication.call(
 					this,
 					'agentBrainsIntegrationApi',
@@ -631,9 +621,7 @@ export class KnowledgeBase implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
-		const execOptions = this.getNodeParameter('options', 0, {}) as { environment?: string };
-		const domain = getEnvironmentDomain(execOptions.environment || 'sandbox');
-		const apiBase = `https://sds.${domain}/integration`;
+		const apiBase = `https://sds.${DOMAIN}/integration`;
 		const resource = this.getNodeParameter('resource', 0) as Resource;
 
 		for (let i = 0; i < items.length; i++) {
@@ -666,7 +654,27 @@ export class KnowledgeBase implements INodeType {
 					responseData = await handleRelationshipType(this, operation, apiBase);
 				}
 
-				const itemsData = processResponse(responseData, operation, this, i);
+				let itemsData = processResponse(responseData, operation, this, i);
+
+				// Merge documents if the toggle is enabled
+				if (resource === Resource.Entity && operation === Operation.GetAllDocuments) {
+					const mergeDocuments = this.getNodeParameter('mergeDocuments', i, false) as boolean;
+					if (mergeDocuments) {
+						// Unwrap the { items: [...] } wrapper added by processResponse
+						const docs = Array.isArray(itemsData[0]?.items) ? (itemsData[0].items as IDataObject[]) : itemsData;
+						const mergedContent = docs
+							.map((doc: IDataObject) => {
+								const parts: string[] = [];
+								if (doc.name) parts.push(`## ${doc.name}`);
+								if (doc.description) parts.push(String(doc.description));
+								if (doc.details) parts.push(String(doc.details));
+								return parts.join('\n\n');
+							})
+							.filter((text: string) => text.length > 0)
+							.join('\n\n---\n\n');
+						itemsData = [{ mergedContent, documentCount: docs.length }];
+					}
+				}
 
 				const executionData = this.helpers.constructExecutionMetaData(
 					this.helpers.returnJsonArray(itemsData),
@@ -720,11 +728,11 @@ async function handleEntity(
 ): Promise<IDataObject | IDataObject[]> {
 	const operations: { [key: string]: () => Promise<IDataObject | IDataObject[]> } = {
 		[Operation.GetAll]: async () => {
-			const categoryId = ctx.getNodeParameter('categoryId', i, '') as string;
+			const categoryIds = ctx.getNodeParameter('categoryId', i, []) as string[];
 			const search = ctx.getNodeParameter('search', i, '') as string;
 			const additionalFields = ctx.getNodeParameter('additionalFields', i) as IDataObject;
 			const qs: IDataObject = { ...additionalFields };
-			if (categoryId) qs.categoryId = categoryId;
+			if (categoryIds.length > 0) qs.categoryId = categoryIds.join(',');
 			if (search) qs.search = search;
 			return await makeRequest(ctx, 'GET', `${apiBase}/entities`, qs);
 		},
@@ -749,6 +757,9 @@ async function handleEntity(
 			const qs: IDataObject = { ...additionalFields };
 			if (search) qs.search = search;
 			return await makeRequest(ctx, 'GET', `${apiBase}/entities/${categoryAlias}`, qs);
+		},
+		[Operation.GetAllDocuments]: async () => {
+			return await makeRequest(ctx, 'GET', `${apiBase}/entities`);
 		},
 	};
 
@@ -874,6 +885,7 @@ function processResponse(
 	if (
 		[
 			Operation.GetAll,
+			Operation.GetAllDocuments,
 			Operation.GetRelationships,
 			Operation.GetAttachments,
 			Operation.GetByCategoryAlias,

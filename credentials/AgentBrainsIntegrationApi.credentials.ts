@@ -6,6 +6,8 @@ import type {
 	INodeProperties,
 } from 'n8n-workflow';
 
+import { DOMAIN } from '../nodes/constants';
+
 export class AgentBrainsIntegrationApi implements ICredentialType {
 	name = 'agentBrainsIntegrationApi';
 
@@ -38,8 +40,7 @@ export class AgentBrainsIntegrationApi implements ICredentialType {
 
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: 'https://akm.dwm-sndbx-ai.com',
-			// baseURL: 'https://akm.agent-brains.com',
+			baseURL: `https://akm.${DOMAIN}`,
 			url: '/keys/verify',
 			method: 'POST',
 			body: {

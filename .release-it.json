@@ -1,0 +1,5 @@
+{
+	"hooks": {
+		"after:init": "node scripts/patch-env.js staging"
+	}
+}
