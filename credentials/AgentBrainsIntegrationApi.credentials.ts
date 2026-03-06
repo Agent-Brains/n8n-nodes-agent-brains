@@ -26,6 +26,15 @@ export class AgentBrainsIntegrationApi implements ICredentialType {
 			typeOptions: { password: true },
 			default: '',
 		},
+		{
+			displayName: 'Custom Domain',
+			name: 'domain',
+			type: 'string',
+			default: '',
+			placeholder: `e.g. dwm-sndbx-ai.com  (leave blank to use ${DOMAIN})`,
+			description: `Override the target environment domain. Leave empty to use the default (${DOMAIN}).`,
+			required: false,
+		},
 	];
 
 	authenticate: IAuthenticateGeneric = {
@@ -40,7 +49,7 @@ export class AgentBrainsIntegrationApi implements ICredentialType {
 
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: `https://akm.${DOMAIN}`,
+			baseURL: `={{"https://akm." + ($credentials.domain?.trim() || "${DOMAIN}")}}`,
 			url: '/keys/verify',
 			method: 'POST',
 			body: {
@@ -50,3 +59,4 @@ export class AgentBrainsIntegrationApi implements ICredentialType {
 		},
 	};
 }
+

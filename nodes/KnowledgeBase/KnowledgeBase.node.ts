@@ -8,7 +8,7 @@ import {
 	type INodeType,
 	type INodeTypeDescription,
 } from 'n8n-workflow';
-import { DOMAIN } from '../constants';
+import { getDomain } from '../constants';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -521,7 +521,8 @@ export class KnowledgeBase implements INodeType {
 	methods = {
 		loadOptions: {
 			async getCategories(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				const apiBase = `https://sds.${DOMAIN}/integration`;
+				const credentials = await this.getCredentials('agentBrainsIntegrationApi');
+				const apiBase = `https://sds.${getDomain(credentials)}/integration`;
 				const responseData = await this.helpers.httpRequestWithAuthentication.call(
 					this,
 					'agentBrainsIntegrationApi',
@@ -584,7 +585,8 @@ export class KnowledgeBase implements INodeType {
 				return options;
 			},
 			async getCategoryAliases(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				const apiBase = `https://sds.${DOMAIN}/integration`;
+				const credentials = await this.getCredentials('agentBrainsIntegrationApi');
+				const apiBase = `https://sds.${getDomain(credentials)}/integration`;
 				const responseData = await this.helpers.httpRequestWithAuthentication.call(
 					this,
 					'agentBrainsIntegrationApi',
@@ -621,7 +623,8 @@ export class KnowledgeBase implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
-		const apiBase = `https://sds.${DOMAIN}/integration`;
+		const credentials = await this.getCredentials('agentBrainsIntegrationApi');
+		const apiBase = `https://sds.${getDomain(credentials)}/integration`;
 		const resource = this.getNodeParameter('resource', 0) as Resource;
 
 		for (let i = 0; i < items.length; i++) {

@@ -8,7 +8,7 @@ import {
     LoggerProxy,
 } from 'n8n-workflow';
 
-import { DOMAIN } from '../constants';
+import { getDomain } from '../constants';
 
 
 
@@ -18,7 +18,8 @@ export class IntegrationTrigger implements INodeType {
             checkExists: async function (this: IHookFunctions): Promise<boolean> {
                 const workflow = this.getWorkflow();
                 const workflowId = workflow.id as string;
-                const apiBase = `https://admin-panel.${DOMAIN}/api/n8n`;
+                const credentials = await this.getCredentials('agentBrainsIntegrationApi');
+                const apiBase = `https://admin-panel.${getDomain(credentials)}/api/n8n`;
                 try {
                     const checkUrl = `${apiBase}/registered/${encodeURIComponent(workflowId)}`;
                     const resp = await this.helpers.httpRequestWithAuthentication.call(this, 'agentBrainsIntegrationApi', {
@@ -39,7 +40,8 @@ export class IntegrationTrigger implements INodeType {
                 const workflowId = workflow.id as string;
                 const workflowName = workflow.name as string;
                 const webhookUrl = this.getNodeWebhookUrl('default');
-                const apiBase = `https://admin-panel.${DOMAIN}/api/n8n`;
+                const credentials = await this.getCredentials('agentBrainsIntegrationApi');
+                const apiBase = `https://admin-panel.${getDomain(credentials)}/api/n8n`;
                 try {
                     await this.helpers.httpRequestWithAuthentication.call(this, 'agentBrainsIntegrationApi', {
                         method: 'POST',
