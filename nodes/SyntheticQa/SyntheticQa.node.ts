@@ -8,12 +8,9 @@ import {
 } from 'n8n-workflow';
 
 import {
-	EXTERNAL_SYNTH_USERS_URL,
-	EXTERNAL_GENERATE_OBJECTIVES_URL,
-	EXTERNAL_TEST_RUNS_START_URL,
-	EXTERNAL_TEST_RUNS_LIST_URL,
 	SYNTHETIC_QA_MAX_WAIT_SECONDS,
 	SYNTHETIC_QA_POLL_INTERVAL_SECONDS,
+	getDomain,
 } from '../constants';
 
 interface IExternalSyntheticUser {
@@ -184,9 +181,11 @@ export class SyntheticQa implements INodeType {
 	methods = {
 		loadOptions: {
 			async getSyntheticUsers(this: ILoadOptionsFunctions) {
+				const credentials = await this.getCredentials('agentBrainsIntegrationApi');
+				const adminBase = `https://admin-panel.${getDomain(credentials)}`;
 				const users = await externalRequest<IExternalSyntheticUser[]>(this, {
 					method: 'GET',
-					url: EXTERNAL_SYNTH_USERS_URL,
+					url: `${adminBase}/api/external/synthetic-users`,
 				});
 
 				return (users ?? []).map((u) => ({
@@ -287,10 +286,17 @@ export class SyntheticQa implements INodeType {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
 
+		const credentials = await this.getCredentials('agentBrainsIntegrationApi');
+		const adminBase = `https://admin-panel.${getDomain(credentials)}`;
+		const SYNTH_USERS_URL = `${adminBase}/api/external/synthetic-users`;
+		const GENERATE_OBJECTIVES_URL = `${adminBase}/api/external/generate-objectives`;
+		const TEST_RUNS_START_URL = `${adminBase}/api/external/test-runs-start`;
+		const TEST_RUNS_LIST_URL = `${adminBase}/api/external/test-runs-list`;
+
 		// Fetch synthetic users once per execution (for customerParams fill)
 		const allUsers = await externalRequest<IExternalSyntheticUser[]>(this, {
 			method: 'GET',
-			url: EXTERNAL_SYNTH_USERS_URL,
+			url: SYNTH_USERS_URL,
 		});
 
 		this.logger.info('[AB] Loaded synthetic users', {
@@ -345,7 +351,7 @@ export class SyntheticQa implements INodeType {
 			} else {
 				const genResp = await externalRequest<IGenerateObjectivesResponse>(this, {
 					method: 'POST',
-					url: EXTERNAL_GENERATE_OBJECTIVES_URL,
+					url: GENERATE_OBJECTIVES_URL,
 					body: { syntheticUserId },
 				});
 
@@ -357,7 +363,7 @@ export class SyntheticQa implements INodeType {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const startResp = await externalRequest<any>(this, {
 				method: 'POST',
-				url: EXTERNAL_TEST_RUNS_START_URL,
+				url: TEST_RUNS_START_URL,
 				body: {
 					profileId,
 					runs,
@@ -387,7 +393,7 @@ export class SyntheticQa implements INodeType {
 			while (Date.now() - startTime < maxWaitMs) {
 				const listResp = await externalRequest<ITestRunsListResponse>(this, {
 					method: 'GET',
-					url: EXTERNAL_TEST_RUNS_LIST_URL,
+					url: TEST_RUNS_LIST_URL,
 				});
 
 				const docs = Array.isArray(listResp?.docs) ? listResp.docs : [];

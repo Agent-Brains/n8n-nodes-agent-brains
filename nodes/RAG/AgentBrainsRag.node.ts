@@ -6,7 +6,7 @@ import {
     type ILoadOptionsFunctions,
     type INodePropertyOptions,
 } from 'n8n-workflow';
-import { DOMAIN } from '../constants';
+import { getDomain } from '../constants';
 
 declare const console: {
     log(...args: unknown[]): void;
@@ -145,7 +145,8 @@ export class AgentBrainsRag implements INodeType {
     methods = {
         loadOptions: {
             async getIndexes(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-                const apiBase = `https://sds.${DOMAIN}/integration`;
+                const credentials = await this.getCredentials('agentBrainsIntegrationApi');
+                const apiBase = `https://sds.${getDomain(credentials)}/integration`;
                 try {
                     const response = await this.helpers.httpRequestWithAuthentication.call(
                         this,
@@ -175,7 +176,8 @@ export class AgentBrainsRag implements INodeType {
     async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
         const items = this.getInputData();
         const returnData: INodeExecutionData[] = [];
-        const apiBase = `https://sds.${DOMAIN}/integration`;
+        const credentials = await this.getCredentials('agentBrainsIntegrationApi');
+        const apiBase = `https://sds.${getDomain(credentials)}/integration`;
         const operation = this.getNodeParameter('operation', 0) as string;
 
         for (let i = 0; i < items.length; i++) {
