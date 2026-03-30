@@ -116,7 +116,7 @@ export class AgentBrainsRag implements INodeType {
                         displayName: 'Top K',
                         name: 'topK',
                         type: 'number',
-                        default: 5,
+                        default: 10,
                         typeOptions: {
                             minValue: 1,
                         },
