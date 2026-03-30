@@ -44,13 +44,6 @@ interface ITestRunsListResponse {
 	docs?: ITestRunDoc[];
 }
 
-// TS in n8n node template doesn't know about setTimeout by default
-declare function setTimeout(
-	handler: (...args: unknown[]) => void,
-	timeout?: number,
-	...args: unknown[]
-): unknown;
-
 // ---- Helpers ----
 function parseManualGoals(raw: string): string[] {
 	const v = (raw ?? '').trim();
@@ -177,6 +170,28 @@ Response: ${typeof respBody === 'string' ? respBody : JSON.stringify(respBody)}`
 	}
 }
 
+async function sleep(
+	ctx: IExecuteFunctions | ILoadOptionsFunctions,
+	ms: number,
+): Promise<void> {
+	const maybeSleep = (
+		ctx.helpers as typeof ctx.helpers & {
+			sleep?: (milliseconds: number) => Promise<void>;
+		}
+	).sleep;
+
+	if (typeof maybeSleep === 'function') {
+		await maybeSleep.call(ctx.helpers, ms);
+		return;
+	}
+
+	throw new NodeOperationError(
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		(ctx as any).getNode(),
+		'Internal sleep helper is not available in this n8n version. Please upgrade n8n.',
+	);
+}
+
 export class SyntheticQa implements INodeType {
 	methods = {
 		loadOptions: {
@@ -224,7 +239,8 @@ export class SyntheticQa implements INodeType {
 					loadOptionsMethod: 'getSyntheticUsers',
 				},
 				default: '',
-				description: 'Select a Synthetic QA for this test run. To set up a new QA please visit the Agent Brains platform. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+				description:
+					'Select a Synthetic QA for this test run. To set up a new QA please visit the Agent Brains platform. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 			},
 			{
 				displayName: 'Choose Amount of Test Conversations',
@@ -275,7 +291,8 @@ export class SyntheticQa implements INodeType {
 				type: 'string',
 				default: '',
 				placeholder: 'e.g. Try coupon XMAS10',
-				description: 'If provided, the synthetic user will try to negotiate / apply promotions during the conversations',
+				description:
+					'If provided, the synthetic user will try to negotiate / apply promotions during the conversations',
 				displayOptions: { show: { showAdvanced: [true] } },
 			},
 		],
@@ -413,7 +430,8 @@ export class SyntheticQa implements INodeType {
 					break;
 				}
 
-				await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+				// eslint-disable-next-line no-await-in-loop
+				await sleep(this, pollIntervalMs);
 			}
 
 			const scoringTestsClean = (completedDoc?.scoringTests ?? []).map((t) => ({
