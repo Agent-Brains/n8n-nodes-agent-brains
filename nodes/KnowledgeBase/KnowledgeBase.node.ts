@@ -31,11 +31,6 @@ enum Operation {
 	GetByAlias = 'getByAlias',
 }
 
-declare const console: {
-	log(message?: any, ...optionalParams: any[]): void;
-	error(message?: any, ...optionalParams: any[]): void;
-};
-
 export class KnowledgeBase implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'AgentBrains Knowledge Base',
@@ -629,8 +624,6 @@ export class KnowledgeBase implements INodeType {
 
 		for (let i = 0; i < items.length; i++) {
 			try {
-				console.log(`[AgentBrains Debug] Processing item ${i}`);
-
 				// Company Data is a fixed single-object fetch — no operation selector needed.
 				if (resource === Resource.CompanyData) {
 					const companyData = await handleCompanyData(this, apiBase);
@@ -686,7 +679,6 @@ export class KnowledgeBase implements INodeType {
 				returnData.push(...executionData);
 
 			} catch (error) {
-				console.error(`[AgentBrains Debug] Error processing item ${i}`, error);
 				if (this.continueOnFail()) {
 					returnData.push({ json: { error: error.message } });
 					continue;
@@ -694,10 +686,6 @@ export class KnowledgeBase implements INodeType {
 				throw error;
 			}
 		}
-
-		console.log('[AgentBrains Debug] Execute finished', {
-			returnDataCount: returnData.length,
-		});
 
 		return [returnData];
 	}

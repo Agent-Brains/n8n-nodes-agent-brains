@@ -8,15 +8,6 @@ import {
 } from 'n8n-workflow';
 import { getDomain } from '../constants';
 
-declare const console: {
-    log(...args: unknown[]): void;
-    error(...args: unknown[]): void;
-    warn(...args: unknown[]): void;
-    info(...args: unknown[]): void;
-    debug(...args: unknown[]): void;
-};
-
-
 const GLOBAL_INDEX_OPTION: INodePropertyOptions = { name: 'Core Text Index (All Documents)', value: 'general_helper_documents' };
 
 interface IIndex {
@@ -165,8 +156,7 @@ export class AgentBrainsRag implements INodeType {
                     }));
 
                     return [GLOBAL_INDEX_OPTION, ...indexes];
-                } catch (error) {
-                    console.error('Error loading indexes:', error);
+                } catch в {
                     return [GLOBAL_INDEX_OPTION];
                 }
             },
@@ -191,7 +181,6 @@ export class AgentBrainsRag implements INodeType {
                 let namespace: string;
                 if (operation === 'text') {
                     namespace = this.getNodeParameter('index', i) as string;
-                    console.log('Namespace:', namespace);
                 } else {
                     namespace = 'images';
                 }
