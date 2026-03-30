@@ -22,6 +22,7 @@ export class AgentBrainsRag implements INodeType {
         icon: 'file:../../icons/agentBrainsIntegration.svg',
         group: ['transform'],
         version: 1,
+        subtitle: '={{$parameter["operation"]}}',
         description: 'Retrieve information from Agent Brains RAG',
         defaults: {
             name: 'Agent Brains RAG',
@@ -80,7 +81,7 @@ export class AgentBrainsRag implements INodeType {
                 type: 'string',
                 default: '',
                 required: true,
-                placeholder: 'Search query',
+                placeholder: 'e.g. What are the return policy terms?',
                 description: 'The text to search for. When used as a tool, this is automatically filled by the AI model.',
             },
             {
@@ -100,7 +101,7 @@ export class AgentBrainsRag implements INodeType {
                 name: 'toolDescription',
                 type: 'string',
                 default: '',
-                placeholder: 'Use this tool to search for...',
+                placeholder: 'e.g. Use this tool to find product information',
                 description: 'Description of what this tool does, for the AI Agent to understand when to use it',
             },
             {
@@ -156,7 +157,7 @@ export class AgentBrainsRag implements INodeType {
                     }));
 
                     return [GLOBAL_INDEX_OPTION, ...indexes];
-                } catch в {
+                } catch {
                     return [GLOBAL_INDEX_OPTION];
                 }
             },
