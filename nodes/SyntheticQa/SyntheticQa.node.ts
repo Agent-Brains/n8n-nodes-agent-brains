@@ -163,9 +163,10 @@ async function externalRequest<T>(
 		throw new NodeOperationError(
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			(ctx as any).getNode(),
-			`External request failed (HTTP ${status})
-URL: ${opts.url}
-Response: ${typeof respBody === 'string' ? respBody : JSON.stringify(respBody)}`,
+			`Could not reach the AgentBrains API (HTTP ${status})`,
+			{
+				description: `Check your API credentials and that the AgentBrains service is reachable. URL attempted: ${opts.url}. Response: ${typeof respBody === 'string' ? respBody : JSON.stringify(respBody)}`,
+			}
 		);
 	}
 }
@@ -217,6 +218,7 @@ export class SyntheticQa implements INodeType {
 		group: ['transform'],
 		version: 1,
 		icon: 'file:../../icons/agentBrainsIntegration.svg',
+		subtitle: '={{$parameter["syntheticUserId"]}}',
 		description:
 			'Runs a synthetic QA evaluation test on your agent and returns scoring results.',
 		defaults: {
@@ -232,7 +234,7 @@ export class SyntheticQa implements INodeType {
 		outputs: ['main'],
 		properties: [
 			{
-				displayName: 'Select Synthetic QA Name or ID',
+				displayName: 'Synthetic QA Name or ID',
 				name: 'syntheticUserId',
 				type: 'options',
 				typeOptions: {
@@ -240,10 +242,10 @@ export class SyntheticQa implements INodeType {
 				},
 				default: '',
 				description:
-					'Select a Synthetic QA for this test run. To set up a new QA please visit the Agent Brains platform. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+					'Select a Synthetic QA for this test run. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 			},
 			{
-				displayName: 'Choose Amount of Test Conversations',
+				displayName: 'Number of Test Conversations',
 				name: 'runs',
 				type: 'number',
 				default: 10,
@@ -261,7 +263,7 @@ export class SyntheticQa implements INodeType {
 				description: 'Which behaviors should be evaluated and scored',
 				options: [
 					{ name: 'Customers Mood Change', value: 'Customers Mood Change' },
-					{ name: 'Human-Free Issue Handling', value: 'Human-free Issue Handling' },
+					{ name: 'Human-Free Issue Handling', value: 'Human-Free Issue Handling' },
 					{ name: 'Information Completeness', value: 'Information Completeness' },
 					{ name: 'Making a Sale', value: 'Making a Sale' },
 					{ name: 'Objection Handling', value: 'Objection Handling' },
@@ -270,30 +272,29 @@ export class SyntheticQa implements INodeType {
 				],
 			},
 			{
-				displayName: 'Show Advanced Settings',
-				name: 'showAdvanced',
-				type: 'boolean',
-				default: false,
-				description: 'Whether to show optional advanced settings (not required)',
-			},
-			{
-				displayName: 'Conversation Goals',
-				name: 'manualGoals',
-				type: 'string',
-				default: '',
-				placeholder: 'e.g. Ask about delivery time to California',
-				description: 'If provided, these goals will be used across all conversations',
-				displayOptions: { show: { showAdvanced: [true] } },
-			},
-			{
-				displayName: 'Promotion Details',
-				name: 'negotiation',
-				type: 'string',
-				default: '',
-				placeholder: 'e.g. Try coupon XMAS10',
-				description:
-					'If provided, the synthetic user will try to negotiate / apply promotions during the conversations',
-				displayOptions: { show: { showAdvanced: [true] } },
+				displayName: 'Options',
+				name: 'options',
+				type: 'collection',
+				placeholder: 'Add Option',
+				default: {},
+				options: [
+					{
+						displayName: 'Conversation Goals',
+						name: 'manualGoals',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g. Ask about delivery time to California',
+						description: 'Goals to use across all conversations. If empty, goals are auto-generated.',
+					},
+					{
+						displayName: 'Promotion Details',
+						name: 'negotiation',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g. Try coupon XMAS10',
+						description: 'Promotion or negotiation text the synthetic user will apply during conversations',
+					},
+				],
 			},
 		],
 		usableAsTool: true,
@@ -325,23 +326,22 @@ export class SyntheticQa implements INodeType {
 			const runs = this.getNodeParameter('runs', i) as number;
 			const scoring = this.getNodeParameter('scoring', i, []) as string[];
 
-			const showAdvanced = this.getNodeParameter('showAdvanced', i) as boolean;
+			const options = this.getNodeParameter('options', i, {}) as {
+				manualGoals?: string;
+				negotiation?: string;
+			};
 
-			const manualGoalsRaw = showAdvanced
-				? ((this.getNodeParameter('manualGoals', i) as string) ?? '')
-				: '';
+			const manualGoalsRaw = options.manualGoals ?? '';
 			const manualGoals = parseManualGoals(manualGoalsRaw);
 
-			const negotiationRaw = showAdvanced
-				? ((this.getNodeParameter('negotiation', i) as string) ?? '')
-				: '';
-			const negotiation = (negotiationRaw ?? '').trim();
+			const negotiationRaw = options.negotiation ?? '';
+			const negotiation = negotiationRaw.trim();
 
 			const selectedUser = (allUsers ?? []).find((u) => u.id === syntheticUserId);
 			if (!selectedUser) {
 				throw new NodeOperationError(
 					this.getNode(),
-					`Synthetic user not found for id: ${syntheticUserId}`,
+					`No synthetic QA found with the selected ID. Select a different QA from the list.`,
 				);
 			}
 
@@ -430,7 +430,6 @@ export class SyntheticQa implements INodeType {
 					break;
 				}
 
-				// eslint-disable-next-line no-await-in-loop
 				await sleep(this, pollIntervalMs);
 			}
 
