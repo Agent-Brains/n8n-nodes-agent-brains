@@ -319,7 +319,7 @@ export class KnowledgeBase implements INodeType {
 				type: 'boolean',
 				displayOptions: {
 					show: {
-						resource: [Resource.Entity, Resource.Category, Resource.CategoryAlias, Resource.Attachment, Resource.RelationshipType],
+						resource: [Resource.Entity, Resource.Category, Resource.Attachment, Resource.RelationshipType],
 						operation: [
 							Operation.GetAll,
 							Operation.GetAllDocuments,
@@ -365,10 +365,23 @@ export class KnowledgeBase implements INodeType {
 				displayOptions: {
 					show: {
 						resource: [Resource.Entity],
-						operation: [Operation.GetAll, Operation.GetByCategoryAlias],
+						operation: [Operation.GetAll],
 					},
 				},
 				description: 'Performs a case-insensitive text search across the name, description, and details fields',
+			},
+			{
+				displayName: 'Recursive',
+				name: 'recursive',
+				type: 'boolean',
+				default: false,
+				displayOptions: {
+					show: {
+						resource: [Resource.Entity],
+						operation: [Operation.GetAll],
+					},
+				},
+				description: 'Whether to fetch all entities from the category subtree',
 			},
 			{
 				displayName: 'Additional Fields',
@@ -721,10 +734,12 @@ async function handleEntity(
 		[Operation.GetAll]: async () => {
 			const categoryIds = ctx.getNodeParameter('categoryId', i, []) as string[];
 			const search = ctx.getNodeParameter('search', i, '') as string;
+			const recursive = ctx.getNodeParameter('recursive', i, false) as boolean;
 			const additionalFields = ctx.getNodeParameter('additionalFields', i) as IDataObject;
 			const qs: IDataObject = { ...additionalFields };
 			if (categoryIds.length > 0) qs.categoryId = categoryIds.join(',');
 			if (search) qs.search = search;
+			if (recursive) qs.recursive = true;
 			return await makeRequest(ctx, 'GET', `${apiBase}/entities`, qs);
 		},
 		[Operation.Get]: async () => {

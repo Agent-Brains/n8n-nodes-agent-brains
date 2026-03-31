@@ -31,7 +31,8 @@ export class AgentBrainsIntegrationApi implements ICredentialType {
 			name: 'domain',
 			type: 'string',
 			default: '',
-			placeholder: `e.g. dwm-sndbx-ai.com  (leave blank to use ${DOMAIN})`,
+			// dwm-sndbx-ai.com - sandbox
+			placeholder: `e.g. sandbox.agent-brains.com  (leave blank to use ${DOMAIN})`,
 			description: `Override the target environment domain. Leave empty to use the default (${DOMAIN}).`,
 			required: false,
 		},
