@@ -71,11 +71,6 @@ export class KnowledgeBase implements INodeType {
 						description: 'Logical groups used to segregate and organize related entities',
 					},
 					{
-						name: 'Category Type',
-						value: Resource.CategoryAlias,
-						description: 'Classifications used to segregate categories into specific types or hierarchies',
-					},
-					{
 
 						name: 'Images',
 						value: Resource.Attachment,
