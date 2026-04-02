@@ -754,9 +754,7 @@ async function handleEntity(
 		[Operation.GetByCategoryAlias]: async () => {
 			const categoryAlias = ctx.getNodeParameter('categoryAlias', i) as string;
 			const additionalFields = ctx.getNodeParameter('additionalFields', i) as IDataObject;
-			const search = ctx.getNodeParameter('search', i) as string;
 			const qs: IDataObject = { ...additionalFields };
-			if (search) qs.search = search;
 			return await makeRequest(ctx, 'GET', `${apiBase}/entities/${categoryAlias}`, qs);
 		},
 		[Operation.GetAllDocuments]: async () => {
