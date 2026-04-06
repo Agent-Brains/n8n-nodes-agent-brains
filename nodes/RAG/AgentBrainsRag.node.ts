@@ -23,9 +23,9 @@ export class AgentBrainsRag implements INodeType {
         group: ['transform'],
         version: 1,
         subtitle: '={{$parameter["operation"]}}',
-        description: 'Retrieve information from Agent Brains RAG',
+        description: 'Retrieve information from AgentBrains RAG',
         defaults: {
-            name: 'Agent Brains RAG',
+            name: 'AgentBrains RAG',
         },
         usableAsTool: true,
         inputs: ['main'],
