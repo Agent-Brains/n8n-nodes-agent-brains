@@ -525,7 +525,7 @@ export class KnowledgeBase implements INodeType {
 		loadOptions: {
 			async getCategories(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				const credentials = await this.getCredentials('agentBrainsIntegrationApi');
-				const apiBase = `https://sds.${getDomain(credentials)}/integration`;
+				const apiBase = `https://api.${getDomain(credentials)}/knowledge-base`;
 				const responseData = await this.helpers.httpRequestWithAuthentication.call(
 					this,
 					'agentBrainsIntegrationApi',
@@ -589,7 +589,7 @@ export class KnowledgeBase implements INodeType {
 			},
 			async getCategoryAliases(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				const credentials = await this.getCredentials('agentBrainsIntegrationApi');
-				const apiBase = `https://sds.${getDomain(credentials)}/integration`;
+				const apiBase = `https://api.${getDomain(credentials)}/knowledge-base`;
 				const responseData = await this.helpers.httpRequestWithAuthentication.call(
 					this,
 					'agentBrainsIntegrationApi',
@@ -627,14 +627,15 @@ export class KnowledgeBase implements INodeType {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
 		const credentials = await this.getCredentials('agentBrainsIntegrationApi');
-		const apiBase = `https://sds.${getDomain(credentials)}/integration`;
+		const apiBase = `https://api.${getDomain(credentials)}/knowledge-base`;
+		const rootApiBase = `https://api.${getDomain(credentials)}`;
 		const resource = this.getNodeParameter('resource', 0) as Resource;
 
 		for (let i = 0; i < items.length; i++) {
 			try {
 				// Company Data is a fixed single-object fetch — no operation selector needed.
 				if (resource === Resource.CompanyData) {
-					const companyData = await handleCompanyData(this, apiBase);
+					const companyData = await handleCompanyData(this, rootApiBase);
 					const executionData = this.helpers.constructExecutionMetaData(
 						this.helpers.returnJsonArray([companyData as IDataObject]),
 						{ itemData: { item: i } },
@@ -847,9 +848,9 @@ async function handleAttachment(
 
 async function handleCompanyData(
 	ctx: IExecuteFunctions,
-	apiBase: string,
+	rootApiBase: string,
 ): Promise<IDataObject> {
-	const response = await makeRequest(ctx, 'GET', `${apiBase}/helpers/company-info`);
+	const response = await makeRequest(ctx, 'GET', `${rootApiBase}/company/info`);
 	// Always return a single object
 	if (Array.isArray(response)) {
 		return response[0] ?? {};

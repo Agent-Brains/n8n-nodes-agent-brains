@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-agent-brains",
-	"version": "1.10.1",
+	"version": "1.11.0",
 	"description": "AgentBrains nodes for n8n to integrate workflows, production webhooks, and Synthetic User validation with the AgentBrains platform.",
 	"license": "MIT",
 	"homepage": "",
@@ -57,8 +57,9 @@
 		]
 	},
 	"devDependencies": {
-		"@n8n/node-cli": "*",
+		"@n8n/node-cli": "0.17.0",
 		"eslint": "9.32.0",
+		"n8n-workflow": "2.15.0",
 		"express": "^5.1.0",
 		"prettier": "3.6.2",
 		"release-it": "^19.0.4",

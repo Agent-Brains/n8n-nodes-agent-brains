@@ -1,0 +1,889 @@
+openapi: 3.0.0
+paths:
+  /health:
+    get:
+      operationId: HealthController_check
+      parameters: []
+      responses:
+        '200':
+          description: Service is operational
+      summary: Health check
+      tags:
+        - health
+  /keys/verify:
+    post:
+      operationId: KeysController_verify
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags:
+        - Keys
+  /company/info:
+    get:
+      operationId: CompanyController_getCompanyInfo
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyInfoDto'
+      security:
+        - bearer: []
+      tags:
+        - company
+  /employees:
+    get:
+      operationId: EmployeesController_getEmployees
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EmployeeDto'
+      security:
+        - bearer: []
+      tags:
+        - employees
+  /employees/{employeeId}:
+    get:
+      operationId: EmployeesController_getEmployee
+      parameters:
+        - name: employeeId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeeConfigDto'
+      security:
+        - bearer: []
+      tags:
+        - employees
+  /knowledge-base/categories:
+    get:
+      operationId: KnowledgeBaseController_getCategories
+      parameters:
+        - name: extended
+          required: false
+          in: query
+          schema:
+            type: boolean
+        - name: fields
+          required: false
+          in: query
+          description: Comma-separated list of fields to include.
+          schema: {}
+        - name: search
+          required: false
+          in: query
+          schema: {}
+        - name: parent
+          required: false
+          in: query
+          description: Use 'null' to get top-level categories.
+          schema: {}
+        - name: policy
+          required: false
+          in: query
+          schema: {}
+        - name: categoryAlias
+          required: false
+          in: query
+          schema: {}
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UnifiedCategoryDto'
+        '400':
+          description: ''
+      tags:
+        - knowledge-base
+  /knowledge-base/categories/{key}:
+    get:
+      operationId: KnowledgeBaseController_getCategoryByKey
+      parameters:
+        - name: key
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: recursive
+          required: false
+          in: query
+          schema:
+            enum:
+              - 'true'
+              - 'false'
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UnifiedCategoryDto'
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/UnifiedCategoryDto'
+        '400':
+          description: ''
+      tags:
+        - knowledge-base
+  /knowledge-base/category-aliases:
+    get:
+      operationId: KnowledgeBaseController_getCategoryAliases
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryAliasDto'
+      tags:
+        - knowledge-base
+  /knowledge-base/relationship-types:
+    get:
+      operationId: KnowledgeBaseController_getRelationshipTypes
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RelationshipTypeDto'
+      tags:
+        - knowledge-base
+  /knowledge-base/attachment-types:
+    get:
+      operationId: KnowledgeBaseController_getAttachmentTypes
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AttachmentTypeDto'
+      tags:
+        - knowledge-base
+  /knowledge-base/policies:
+    get:
+      operationId: KnowledgeBaseController_getPolicies
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyDto'
+      tags:
+        - knowledge-base
+  /knowledge-base/attachments:
+    get:
+      operationId: KnowledgeBaseController_getAttachments
+      parameters:
+        - name: fields
+          required: false
+          in: query
+          description: Comma-separated list of fields to include.
+          schema: {}
+        - name: type
+          required: false
+          in: query
+          schema: {}
+        - name: populated
+          required: false
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FullAttachmentDto'
+      tags:
+        - knowledge-base
+  /knowledge-base/attachments/link:
+    post:
+      operationId: KnowledgeBaseController_linkOrUnlinkAttachment
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkAttachmentBodyDto'
+      responses:
+        '200':
+          description: ''
+        '400':
+          description: ''
+      tags:
+        - knowledge-base
+  /knowledge-base/attachments/{attachmentId}:
+    get:
+      operationId: KnowledgeBaseController_getAttachmentById
+      parameters:
+        - name: attachmentId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: populated
+          required: false
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullAttachmentDto'
+      tags:
+        - knowledge-base
+  /knowledge-base/entities:
+    get:
+      operationId: KnowledgeBaseController_getEntities
+      parameters:
+        - name: recursive
+          required: false
+          in: query
+          schema:
+            enum:
+              - 'true'
+              - 'false'
+            type: string
+        - name: fields
+          required: false
+          in: query
+          description: Comma-separated list of fields to include.
+          schema: {}
+        - name: search
+          required: false
+          in: query
+          schema: {}
+        - name: source
+          required: false
+          in: query
+          schema: {}
+        - name: sku
+          required: false
+          in: query
+          schema: {}
+        - name: tags
+          required: false
+          in: query
+          description: Comma-separated list of tags.
+          schema: {}
+        - name: categoryId
+          required: false
+          in: query
+          description: Single id or comma-separated list.
+          schema: {}
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EntityDto'
+        '400':
+          description: ''
+      tags:
+        - knowledge-base
+  /knowledge-base/entities/{id}/relationships:
+    get:
+      operationId: KnowledgeBaseController_getEntityRelationships
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: type
+          required: false
+          in: query
+          schema: {}
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RelationDto'
+        '400':
+          description: ''
+      tags:
+        - knowledge-base
+  /knowledge-base/entities/{id}/attachments:
+    get:
+      operationId: KnowledgeBaseController_getEntityAttachments
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FullAttachmentDto'
+        '400':
+          description: ''
+      tags:
+        - knowledge-base
+  /knowledge-base/entities/{idOrAlias}:
+    get:
+      operationId: KnowledgeBaseController_getEntityByIdOrAlias
+      parameters:
+        - name: idOrAlias
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: fields
+          required: false
+          in: query
+          description: Comma-separated list of fields to include.
+          schema: {}
+        - name: search
+          required: false
+          in: query
+          schema: {}
+        - name: source
+          required: false
+          in: query
+          schema: {}
+        - name: sku
+          required: false
+          in: query
+          schema: {}
+        - name: tags
+          required: false
+          in: query
+          description: Comma-separated list of tags.
+          schema: {}
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/EntityDto'
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/EntityDto'
+        '400':
+          description: ''
+      tags:
+        - knowledge-base
+  /knowledge-base/indexes:
+    get:
+      operationId: KnowledgeBaseController_getIndexes
+      parameters:
+        - name: notes
+          required: false
+          in: query
+          schema: {}
+        - name: name
+          required: false
+          in: query
+          schema: {}
+        - name: categoryId
+          required: false
+          in: query
+          schema: {}
+        - name: status
+          required: false
+          in: query
+          schema:
+            enum:
+              - initial
+              - vectorised
+              - fail
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IndexDto'
+        '400':
+          description: ''
+      tags:
+        - knowledge-base
+  /knowledge-base/retrieve:
+    post:
+      operationId: KnowledgeBaseController_retrieve
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetrieveBodyDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RetrieverMatchDto'
+        '400':
+          description: ''
+      tags:
+        - knowledge-base
+  /mcp:
+    post:
+      operationId: StreamableController_handleMcpPost
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags:
+        - Streamable
+    get:
+      operationId: StreamableController_handleMcpGet
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+        - Streamable
+    delete:
+      operationId: StreamableController_handleMcpDelete
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+        - Streamable
+  /sse:
+    get:
+      operationId: SseController_handleSse
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+        - Sse
+  /messages:
+    post:
+      operationId: SseController_handleMessages
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags:
+        - Sse
+info:
+  title: Public Gateway
+  description: Public-facing HTTP + MCP gateway
+  version: 0.1.0
+  contact: {}
+tags: []
+servers: []
+components:
+  schemas:
+    CompanyInfoDto:
+      type: object
+      properties:
+        id:
+          type: string
+        customerName:
+          type: string
+        website:
+          type: string
+        industry:
+          type: string
+        scrappedInfo:
+          type: string
+      required:
+        - id
+    EmployeeDto:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+      required:
+        - id
+        - name
+    EmployeeConfigDto:
+      type: object
+      properties:
+        id:
+          type: string
+        apiKeyHash:
+          type: string
+        createdAt:
+          type: string
+        isActive:
+          type: boolean
+        name:
+          type: string
+        updatedAt:
+          type: string
+        campaigns:
+          type: array
+          items:
+            type: object
+        paramPresets:
+          type: object
+          additionalProperties: true
+        role:
+          type: string
+        description:
+          type: string
+        avgAggregateScore:
+          type: object
+          nullable: true
+        conversationCount:
+          type: number
+        config:
+          type: object
+        roleLabel:
+          type: string
+      required:
+        - id
+        - apiKeyHash
+        - createdAt
+        - isActive
+        - name
+        - updatedAt
+        - role
+        - config
+    UnifiedCategoryPermissionsDto:
+      type: object
+      properties:
+        canDelete:
+          type: boolean
+        canChangeHierarchy:
+          type: boolean
+    UnifiedCategoryDto:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        categoryAlias:
+          type: string
+        policy:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/PolicyDto'
+        parent:
+          type: object
+          nullable: true
+        children:
+          type: array
+          items:
+            oneOf:
+              - type: string
+              - $ref: '#/components/schemas/UnifiedCategoryDto'
+        entities:
+          type: array
+          items:
+            type: string
+        permissions:
+          $ref: '#/components/schemas/UnifiedCategoryPermissionsDto'
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - _id
+    PolicyDto:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        policyKey:
+          type: string
+        inputType:
+          type: string
+          enum:
+            - PDF
+            - DOCX
+            - HTML
+            - CSV
+            - JSON
+            - IMAGE
+            - EMAIL
+            - TXT
+        processingPromptTemplate:
+          type: string
+        outputFormat:
+          type: string
+          enum:
+            - MARKDOWN
+            - JSON
+      required:
+        - _id
+    AttachmentDto:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        url:
+          type: string
+        name:
+          type: string
+    RelationDto:
+      type: object
+      properties:
+        sourceEntity:
+          type: string
+        targetEntity:
+          type: string
+        categoryPath:
+          type: array
+          items:
+            type: string
+        type:
+          type: string
+        relationDescription:
+          type: string
+    EntityDto:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        details:
+          type: string
+        source:
+          type: string
+        sku:
+          type: string
+        status:
+          type: string
+          enum:
+            - draft
+            - active
+            - archived
+        category:
+          type: string
+        isVectorized:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttachmentDto'
+        relations:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelationDto'
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - _id
+    FullAttachmentDto:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        url:
+          type: string
+        description:
+          type: string
+        annotations:
+          type: object
+          additionalProperties: true
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - _id
+    CategoryAliasDto:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        aliasKey:
+          type: string
+      required:
+        - _id
+    AttachmentTypeDto:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        typeKey:
+          type: string
+      required:
+        - _id
+    RelationshipTypeDto:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        typeKey:
+          type: string
+      required:
+        - _id
+    IndexDto:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        notes:
+          type: string
+        status:
+          type: string
+          enum:
+            - initial
+            - vectorised
+            - fail
+        categories:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        __v:
+          type: number
+      required:
+        - _id
+    RetrieverMatchDto:
+      type: object
+      properties:
+        id:
+          type: string
+        score:
+          type: number
+        values:
+          type: array
+          items:
+            type: number
+        metadata:
+          type: object
+          additionalProperties: true
+      required:
+        - id
+    RetrieveBodyDto:
+      type: object
+      properties:
+        namespace:
+          type: string
+        query:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+        topK:
+          type: number
+      required:
+        - namespace
+        - query
+    LinkAttachmentBodyDto:
+      type: object
+      properties:
+        attachmentId:
+          type: string
+        attachmentUrl:
+          type: string
+        entityId:
+          type: string
+        action:
+          type: string
+          enum:
+            - link
+            - unlink
+          default: link
+      required:
+        - entityId
