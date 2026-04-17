@@ -138,7 +138,7 @@ export class AgentBrainsRag implements INodeType {
         loadOptions: {
             async getIndexes(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
                 const credentials = await this.getCredentials('agentBrainsIntegrationApi');
-                const apiBase = `https://sds.${getDomain(credentials)}/integration`;
+                const apiBase = `https://api.${getDomain(credentials)}/knowledge-base`;
                 try {
                     const response = await this.helpers.httpRequestWithAuthentication.call(
                         this,
@@ -168,7 +168,7 @@ export class AgentBrainsRag implements INodeType {
         const items = this.getInputData();
         const returnData: INodeExecutionData[] = [];
         const credentials = await this.getCredentials('agentBrainsIntegrationApi');
-        const apiBase = `https://sds.${getDomain(credentials)}/integration`;
+        const apiBase = `https://api.${getDomain(credentials)}/knowledge-base`;
         const operation = this.getNodeParameter('operation', 0) as string;
 
         for (let i = 0; i < items.length; i++) {

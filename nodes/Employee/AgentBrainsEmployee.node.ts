@@ -64,14 +64,14 @@ export class AgentBrainsEmployee implements INodeType {
 		loadOptions: {
 			async getEmployees(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				const credentials = await this.getCredentials('agentBrainsIntegrationApi');
-				const apiBase = `https://sds.${getDomain(credentials)}/integration`;
+				const apiBase = `https://api.${getDomain(credentials)}`;
 				
 				const responseData = await this.helpers.httpRequestWithAuthentication.call(
 					this,
 					'agentBrainsIntegrationApi',
 					{
 						method: 'GET',
-						url: `${apiBase}/helpers/employees`,
+						url: `${apiBase}/employees`,
 						json: true,
 						qs: { scope: 'knowledge-base' }
 					},
@@ -107,7 +107,7 @@ export class AgentBrainsEmployee implements INodeType {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
 		const credentials = await this.getCredentials('agentBrainsIntegrationApi');
-		const apiBase = `https://sds.${getDomain(credentials)}/integration`;
+		const apiBase = `https://api.${getDomain(credentials)}`;
 
 		for (let i = 0; i < items.length; i++) {
 			try {
@@ -118,7 +118,7 @@ export class AgentBrainsEmployee implements INodeType {
 					'agentBrainsIntegrationApi',
 					{
 						method: 'GET',
-						url: `${apiBase}/helpers/employees/${employeeId}`,
+						url: `${apiBase}/employees/${employeeId}`,
 						json: true,
 						qs: { scope: 'knowledge-base' }
 					},

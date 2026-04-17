@@ -50,7 +50,7 @@ export class AgentBrainsIntegrationApi implements ICredentialType {
 
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: `={{"https://akm." + ($credentials.domain?.trim() || "${DOMAIN}")}}`,
+			baseURL: `={{"https://api." + ($credentials.domain?.trim() || "${DOMAIN}")}}`,
 			url: '/keys/verify',
 			method: 'POST',
 			body: {
