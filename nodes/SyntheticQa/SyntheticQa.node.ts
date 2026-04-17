@@ -1,4 +1,5 @@
 import {
+	type IHttpRequestOptions,
 	NodeOperationError,
 	type IExecuteFunctions,
 	type ILoadOptionsFunctions,
@@ -147,7 +148,7 @@ async function externalRequest<T>(
 			{
 				method: opts.method,
 				url: opts.url,
-				body: opts.body,
+				body: opts.body as IHttpRequestOptions['body'],
 				json: true,
 				headers: {
 					Accept: 'application/json',
