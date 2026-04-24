@@ -1,3 +1,8 @@
 dist
 node_modules
 .vscode/symbols.json
+
+# Synced from packages/shared/ by scripts/sync-shared.js (single source of truth)
+packages/*/credentials/AgentBrainsIntegrationApi.credentials.ts
+packages/*/icons/agentBrainsIntegration.svg
+packages/*/nodes/constants.ts

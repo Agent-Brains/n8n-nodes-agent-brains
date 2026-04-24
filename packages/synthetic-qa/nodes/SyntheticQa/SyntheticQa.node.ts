@@ -1,6 +1,7 @@
 import {
-	type IHttpRequestOptions,
+	NodeConnectionTypes,
 	NodeOperationError,
+	type IHttpRequestOptions,
 	type IExecuteFunctions,
 	type ILoadOptionsFunctions,
 	type INodeExecutionData,
@@ -222,6 +223,19 @@ export class SyntheticQa implements INodeType {
 		subtitle: '={{$parameter["syntheticUserId"]}}',
 		description:
 			'Runs a synthetic QA evaluation test on your agent and returns scoring results.',
+		codex: {
+			categories: ['Development'],
+			subcategories: {
+				Development: ['APIs'],
+			},
+			resources: {
+				primaryDocumentation: [
+					{
+						url: 'https://agent-brains.com/docs',
+					},
+				],
+			},
+		},
 		defaults: {
 			name: 'AgentBrains Synthetic QA',
 		},
@@ -231,8 +245,8 @@ export class SyntheticQa implements INodeType {
 				required: true,
 			},
 		],
-		inputs: ['main'],
-		outputs: ['main'],
+		inputs: [NodeConnectionTypes.Main],
+		outputs: [NodeConnectionTypes.Main],
 		properties: [
 			{
 				displayName: 'Synthetic QA Name or ID',
@@ -260,7 +274,7 @@ export class SyntheticQa implements INodeType {
 				displayName: 'Conversation Quality Tests',
 				name: 'scoring',
 				type: 'multiOptions',
-				default: ['Human-free Issue Handling', 'Customers Mood Change'],
+				default: ['Human-Free Issue Handling', 'Customers Mood Change'],
 				description: 'Which behaviors should be evaluated and scored',
 				options: [
 					{ name: 'Customers Mood Change', value: 'Customers Mood Change' },

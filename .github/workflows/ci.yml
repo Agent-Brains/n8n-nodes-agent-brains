@@ -73,6 +73,9 @@ jobs:
     name: Publish to npm on tag
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js
@@ -104,7 +107,7 @@ jobs:
         run: |
           npm run build
           node scripts/patch-env.js staging
-          npm publish
+          npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -114,7 +117,7 @@ jobs:
           BASE_VERSION=$(node -p "require('./package.json').version")
           npm version "${BASE_VERSION}-dev" --no-git-tag-version --allow-same-version
           node scripts/patch-env.js sandbox
-          npm publish --tag dev
+          npm publish --tag dev --provenance --access public
           npm version "$BASE_VERSION" --no-git-tag-version --allow-same-version
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,5 +1,6 @@
 {
-	"name": "n8n-nodes-agent-brains",
+	"name": "n8n-nodes-agent-brains-monorepo",
+	"private": true,
 	"version": "1.11.0",
 	"description": "AgentBrains nodes for n8n to integrate workflows, production webhooks, and Synthetic User validation with the AgentBrains platform.",
 	"license": "MIT",
@@ -30,6 +31,8 @@
 		"url": "git+https://github.com/Agent-Brains/n8n-nodes-agent-brains.git"
 	},
 	"scripts": {
+		"postinstall": "node scripts/sync-shared.js",
+		"sync": "node scripts/sync-shared.js",
 		"build": "TARGET_ENV=${TARGET_ENV:-sandbox} n8n-node build",
 		"build:watch": "tsc --watch",
 		"dev": "n8n-node dev",
@@ -42,20 +45,10 @@
 	"files": [
 		"dist"
 	],
-	"n8n": {
-		"n8nNodesApiVersion": 1,
-		"strict": true,
-		"credentials": [
-			"dist/credentials/AgentBrainsIntegrationApi.credentials.js"
-		],
-		"nodes": [
-			"dist/nodes/IntegrationTrigger/IntegrationTrigger.node.js",
-			"dist/nodes/SyntheticQa/SyntheticQa.node.js",
-			"dist/nodes/KnowledgeBase/KnowledgeBase.node.js",
-			"dist/nodes/RAG/AgentBrainsRag.node.js",
-			"dist/nodes/Employee/AgentBrainsEmployee.node.js"
-		]
-	},
+	"workspaces": [
+		"packages/*"
+	],
+	"n8n": {},
 	"devDependencies": {
 		"@n8n/node-cli": "0.17.0",
 		"eslint": "9.32.0",

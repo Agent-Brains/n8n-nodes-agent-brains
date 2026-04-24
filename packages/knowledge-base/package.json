@@ -1,0 +1,50 @@
+{
+	"name": "n8n-nodes-agent-brains-knowledge-base",
+	"version": "1.11.0",
+	"description": "AgentBrains Knowledge Base node for n8n",
+	"license": "MIT",
+	"homepage": "https://github.com/Agent-Brains/n8n-nodes-agent-brains",
+	"keywords": [
+		"n8n-community-node-package",
+		"n8n",
+		"agent-brains",
+		"knowledge-base"
+	],
+	"author": {
+		"name": "Vlad Balabash",
+		"email": "vbalabash@agent-brains.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Agent-Brains/n8n-nodes-agent-brains.git"
+	},
+	"scripts": {
+		"prebuild": "node ../../scripts/sync-shared.js",
+		"build": "tsc",
+		"build:watch": "tsc --watch",
+		"lint": "eslint .",
+		"lint:fix": "eslint . --fix"
+	},
+	"files": [
+		"dist"
+	],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"strict": true,
+		"credentials": [
+			"dist/credentials/AgentBrainsIntegrationApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/KnowledgeBase/KnowledgeBase.node.js"
+		]
+	},
+	"devDependencies": {
+		"@n8n/node-cli": "0.17.0",
+		"eslint": "9.32.0",
+		"n8n-workflow": "2.15.0",
+		"typescript": "5.9.2"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "*"
+	}
+}

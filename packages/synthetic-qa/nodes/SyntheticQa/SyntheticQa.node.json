@@ -1,9 +1,9 @@
 {
-	"node": "n8n-nodes-agent-brains.agentBrainsRag",
+	"node": "n8n-nodes-agent-brains.syntheticQa",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
-	"categories": ["Utility", "Development", "AI"],
-	"description": "Retrieve information from AgentBrains RAG",
+	"categories": ["Utility", "Development"],
+	"description": "Run synthetic conversations and evaluate agent behavior with AgentBrains synthetic users.",
 	"resources": {
 		"credentialDocumentation": [
 			{
