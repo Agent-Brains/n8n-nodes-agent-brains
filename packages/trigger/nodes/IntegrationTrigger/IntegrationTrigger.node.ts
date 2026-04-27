@@ -18,6 +18,7 @@ export class IntegrationTrigger implements INodeType {
             checkExists: async function (this: IHookFunctions): Promise<boolean> {
                 const workflow = this.getWorkflow();
                 const workflowId = workflow.id as string;
+                const webhookUrl = this.getNodeWebhookUrl('default');
                 const credentials = await this.getCredentials('agentBrainsIntegrationApi');
                 const apiBase = `https://admin-panel.${getDomain(credentials)}/api/n8n`;
                 try {
@@ -26,6 +27,9 @@ export class IntegrationTrigger implements INodeType {
                         method: 'GET',
                         url: checkUrl,
                         json: true,
+                        qs: {
+                            webhookUrl: webhookUrl?.replace('/webhook-test/', '/webhook/'),
+                        },
                     });
                     LoggerProxy.info('Webhook check response:', resp);
                     const { registered } = resp as { registered?: boolean };
@@ -56,6 +60,10 @@ export class IntegrationTrigger implements INodeType {
                     LoggerProxy.info('Webhook registration response');
                     return true;
                 } catch (e) {
+                    const error = e as { httpCode?: number; response?: { status?: number }; statusCode?: number };
+                    if (error.httpCode === 409 || error.response?.status === 409 || error.statusCode === 409) {
+                        throw new Error('Webhook url is already used, please remove and add the trigger node again');
+                    }
                     LoggerProxy.error('Error registering workflow:', e);
                     return false;
                 }

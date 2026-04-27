@@ -210,7 +210,7 @@ export class AgentBrainsRag implements INodeType {
                 }
 
                 const body = {
-                    namespace,
+                    index: namespace,
                     query,
                     metadata: metadata || {},
                     topK: options.topK || 5,

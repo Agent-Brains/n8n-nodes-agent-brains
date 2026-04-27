@@ -42,10 +42,11 @@ packages/shared/
 ```
 
 **How it's wired:**
-- `scripts/sync-shared.js` copies these into each `packages/<pkg>/` at the matching paths.
+- `scripts/sync-shared.js` copies these into each `packages/<pkg>/` at the matching paths and prepends an `AUTO-GENERATED — DO NOT EDIT` header to every synced `.ts` file.
 - Root `package.json` runs sync as `postinstall` (so fresh clones are wired after `npm install`) and exposes it as `npm run sync`.
 - Each package's `package.json` runs sync as `prebuild`, so `npm run build` in any package first refreshes its synced files.
-- Synced targets are listed in `.gitignore` — the only tracked copy is in `packages/shared/`.
+- Synced targets are listed in `.gitignore`; the canonicals under `packages/shared/` are explicitly re-included so they stay tracked.
+- `packages/shared/README.md` documents the pattern and the "edit only here" rule.
 - `tsconfig.base.json` at repo root holds the shared compiler options; each `packages/*/tsconfig.json` extends it and only specifies `outDir` + `include`.
 
 **Duplicates removed (per package):**
@@ -105,4 +106,5 @@ packages/shared/
 - 2026-04-23 — Initial investigation complete. Plan drafted.
 - 2026-04-23 — User progress: monorepo scaffolded, scoring casing fixed, homepage fixed per package, provenance added, inline codex blocks added, delete hook wired (but wrong endpoint).
 - 2026-04-23 — Cleanup pass: deleted legacy root `nodes/`, fixed categories, replaced raw-string `inputs`/`outputs`, removed broken subtitle.
-- 2026-04-23 — Shared-code consolidation: canonical credentials/icon/constants/tsconfig-base moved to `packages/shared/` and `tsconfig.base.json`. `scripts/sync-shared.js` + `postinstall` + `prebuild` wiring. Synced targets gitignored. Root orphans (`credentials/`, `icons/`, `tsconfig.json`) deleted. Remaining: #1 (GitHub sync), #2 (endpoint), monorepo build tooling, `dist/` orphan decision.
+- 2026-04-23 — Shared-code consolidation: canonical credentials/icon/constants/tsconfig-base moved to `packages/shared/` and `tsconfig.base.json`. `scripts/sync-shared.js` + `postinstall` + `prebuild` wiring. Synced targets gitignored. Root orphans (`credentials/`, `icons/`, `tsconfig.json`) deleted.
+- 2026-04-27 — Sync-script visibility pass: synced `.ts` files now carry an `AUTO-GENERATED — DO NOT EDIT` header pointing at `packages/shared/<rel>`. Added `packages/shared/README.md`. Fixed `.gitignore` bug where `packages/*/...` patterns were also matching the `packages/shared/` canonicals — added explicit `!packages/shared/...` re-includes so the canonicals stay tracked. Remaining: #1 (GitHub sync), #2 (endpoint), monorepo build tooling, `dist/` orphan decision.

@@ -10,6 +10,8 @@ on:
 
 jobs:
   build:
+    name: Build & GitHub Packages publish
+    if: ${{ github.ref_type != 'tag' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -32,45 +34,38 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PUBLISH_EMAIL: ${{ secrets.PUBLISH_EMAIL }}
-      
-      - name: Run npm login
-        run: 'npm login --registry=https://npm.pkg.github.com/ -e=${PUBLISH_EMAIL} --always-auth=true'
 
       - name: Install dependencies
         run: 'npm ci'
 
-      - name: Run lint
+      - name: Lint
         run: 'npm run lint'
 
-      - name: Build
+      - name: Build all packages
         run: 'npm run build'
 
-      - name: Run release
-        run: 'npm run release'
-
-      # Staging publish: patch constants to staging, publish main version
+      # Internal staging publish to GitHub Packages.
       - name: Publish staging to GitHub Packages
-        if: ${{ github.ref_type != 'tag' }}
         run: |
           node scripts/patch-env.js staging
-          npm publish
+          npm publish --workspaces --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Sandbox-dev publish: patch constants to sandbox, publish as -dev prerelease
+      # Internal sandbox-dev publish to GitHub Packages.
       - name: Publish sandbox-dev to GitHub Packages
-        if: ${{ github.ref_type != 'tag' }}
         run: |
-          BASE_VERSION=$(node -p "require('./package.json').version")
-          npm version "${BASE_VERSION}-dev" --no-git-tag-version --allow-same-version
+          BASE_VERSION=$(node -p "require('./packages/trigger/package.json').version")
+          npm version "${BASE_VERSION}-dev" --workspaces --no-git-tag-version --allow-same-version
+          npm run build
           node scripts/patch-env.js sandbox
-          npm publish --tag dev
-          npm version "$BASE_VERSION" --no-git-tag-version --allow-same-version
+          npm publish --workspaces --access public --tag dev
+          npm version "$BASE_VERSION" --workspaces --no-git-tag-version --allow-same-version
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-npm:
-    name: Publish to npm on tag
+    name: Publish all packages to npm on tag
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     permissions:
@@ -78,11 +73,13 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
+
       - name: Configure npm auth for npm registry
         run: |
           cat > ~/.npmrc <<EOF
@@ -94,30 +91,17 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           PUBLISH_EMAIL: ${{ secrets.PUBLISH_EMAIL }}
+
       - name: Install dependencies
         run: 'npm ci'
-      - name: Run lint
+
+      - name: Lint
         run: 'npm run lint'
-      
-      - name: Run release
-        run: 'npm run release'
 
-      # Staging publish: build, patch to staging, publish main version
-      - name: Publish staging to npm
-        run: |
-          npm run build
-          node scripts/patch-env.js staging
-          npm publish --provenance --access public
+      # Single command: builds every package, publishes staging + sandbox-dev
+      # for all 5 workspaces with provenance.
+      - name: Release all packages to npm
+        run: 'npm run release:all'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      # Sandbox-dev publish: patch to sandbox, publish as -dev prerelease
-      - name: Publish sandbox-dev to npm
-        run: |
-          BASE_VERSION=$(node -p "require('./package.json').version")
-          npm version "${BASE_VERSION}-dev" --no-git-tag-version --allow-same-version
-          node scripts/patch-env.js sandbox
-          npm publish --tag dev --provenance --access public
-          npm version "$BASE_VERSION" --no-git-tag-version --allow-same-version
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PROVENANCE_FLAG: '--provenance'

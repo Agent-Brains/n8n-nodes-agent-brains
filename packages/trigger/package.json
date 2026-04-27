@@ -21,8 +21,10 @@
 	},
 	"scripts": {
 		"prebuild": "node ../../scripts/sync-shared.js",
-		"build": "tsc",
+		"build": "tsc && node ../../scripts/copy-assets.js",
 		"build:watch": "tsc --watch",
+		"predev": "node ../../scripts/sync-shared.js",
+		"dev": "n8n-node dev",
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix"
 	},
