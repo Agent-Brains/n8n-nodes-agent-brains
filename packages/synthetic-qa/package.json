@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-agent-brains-synthetic-qa",
-	"version": "1.11.0",
+	"version": "2.0.0",
 	"description": "AgentBrains Synthetic QA node for n8n",
 	"license": "MIT",
 	"homepage": "https://github.com/Agent-Brains/n8n-nodes-agent-brains",
