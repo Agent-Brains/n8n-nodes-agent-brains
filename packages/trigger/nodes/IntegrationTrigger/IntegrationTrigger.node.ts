@@ -70,6 +70,7 @@ export class IntegrationTrigger implements INodeType {
             },
             delete: async function (this: IHookFunctions): Promise<boolean> {
                 const webhookData = this.getWorkflowStaticData('node');
+                const webhookUrl = this.getNodeWebhookUrl('default');
                 if (webhookData.webhookId !== undefined) {
                     const credentials = await this.getCredentials('agentBrainsIntegrationApi');
                     const apiBase = `https://api.${getDomain(credentials)}`;
@@ -80,6 +81,9 @@ export class IntegrationTrigger implements INodeType {
                             {
                                 method: 'DELETE',
                                 url: `${apiBase}/webhooks/${webhookData.webhookId}`,
+                                qs: {
+                                    webhookUrl: webhookUrl?.replace('/webhook-test/', '/webhook/'),
+                                },
                             },
                         );
                     } catch (error) {
