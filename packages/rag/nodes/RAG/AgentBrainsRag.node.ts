@@ -1,4 +1,5 @@
 import {
+    NodeConnectionTypes,
     type IExecuteFunctions,
     type INodeExecutionData,
     type INodeType,
@@ -24,12 +25,25 @@ export class AgentBrainsRag implements INodeType {
         version: 1,
         subtitle: '={{$parameter["operation"]}}',
         description: 'Retrieve information from AgentBrains RAG',
+        codex: {
+            categories: ['Development'],
+            subcategories: {
+                Development: ['APIs'],
+            },
+            resources: {
+                primaryDocumentation: [
+                    {
+                        url: 'https://agent-brains.com/docs',
+                    },
+                ],
+            },
+        },
         defaults: {
             name: 'AgentBrains RAG',
         },
         usableAsTool: true,
-        inputs: ['main'],
-        outputs: ['main'],
+        inputs: [NodeConnectionTypes.Main],
+        outputs: [NodeConnectionTypes.Main],
         credentials: [
             {
                 name: 'agentBrainsIntegrationApi',
@@ -196,7 +210,7 @@ export class AgentBrainsRag implements INodeType {
                 }
 
                 const body = {
-                    namespace,
+                    index: namespace,
                     query,
                     metadata: metadata || {},
                     topK: options.topK || 5,

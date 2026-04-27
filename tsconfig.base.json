@@ -18,8 +18,6 @@
 		"incremental": true,
 		"declaration": true,
 		"sourceMap": true,
-		"skipLibCheck": true,
-		"outDir": "./dist/"
-	},
-	"include": ["credentials/**/*", "nodes/**/*", "nodes/**/*.json", "package.json"]
+		"skipLibCheck": true
+	}
 }

@@ -1,9 +1,9 @@
 {
-	"node": "n8n-nodes-agent-brains.integrationTrigger",
+	"node": "n8n-nodes-agent-brains.knowledgeBase",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
-	"categories": ["Utility", "Development", "Trigger"],
-	"description": "Integrate your custom n8n workflow with the AgentBrains platform.",
+	"categories": ["Utility", "Development"],
+	"description": "Interact with the AgentBrains Knowledge Base to manage entities and categories.",
 	"resources": {
 		"credentialDocumentation": [
 			{

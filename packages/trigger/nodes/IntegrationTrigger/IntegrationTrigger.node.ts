@@ -1,11 +1,11 @@
 import {
-    INodeType,
-    INodeTypeDescription,
-    IWebhookFunctions,
-    IWebhookResponseData,
-    IHookFunctions,
-    NodeConnectionTypes,
-    LoggerProxy,
+	type IHookFunctions,
+	type IWebhookFunctions,
+	type INodeType,
+	type INodeTypeDescription,
+	type IWebhookResponseData,
+	LoggerProxy,
+	NodeConnectionTypes,
 } from 'n8n-workflow';
 
 import { getDomain } from '../constants';
@@ -18,6 +18,7 @@ export class IntegrationTrigger implements INodeType {
             checkExists: async function (this: IHookFunctions): Promise<boolean> {
                 const workflow = this.getWorkflow();
                 const workflowId = workflow.id as string;
+                const webhookUrl = this.getNodeWebhookUrl('default');
                 const credentials = await this.getCredentials('agentBrainsIntegrationApi');
                 const apiBase = `https://admin-panel.${getDomain(credentials)}/api/n8n`;
                 try {
@@ -26,6 +27,9 @@ export class IntegrationTrigger implements INodeType {
                         method: 'GET',
                         url: checkUrl,
                         json: true,
+                        qs: {
+                            webhookUrl: webhookUrl?.replace('/webhook-test/', '/webhook/'),
+                        },
                     });
                     LoggerProxy.info('Webhook check response:', resp);
                     const { registered } = resp as { registered?: boolean };
@@ -56,25 +60,39 @@ export class IntegrationTrigger implements INodeType {
                     LoggerProxy.info('Webhook registration response');
                     return true;
                 } catch (e) {
+                    const error = e as { httpCode?: number; response?: { status?: number }; statusCode?: number };
+                    if (error.httpCode === 409 || error.response?.status === 409 || error.statusCode === 409) {
+                        throw new Error('Webhook url is already used, please remove and add the trigger node again');
+                    }
                     LoggerProxy.error('Error registering workflow:', e);
                     return false;
                 }
             },
             delete: async function (this: IHookFunctions): Promise<boolean> {
-                // const workflow = this.getWorkflow();
-                // const workflowId = workflow.id as string;
-                try {
-                    // const resp = await this.helpers.httpRequestWithAuthentication.call(this, 'agentBrainsIntegrationApi', {
-                    //     method: 'DELETE',
-                    //     url: `${API_BASE}/unregister/${encodeURIComponent(workflowId)}`,
-                    // });
-                    // LoggerProxy.info('Webhook unregistration response:', resp);
-                    LoggerProxy.info('Webhook unregistration response');
-                    return true;
-                } catch (e) {
-                    LoggerProxy.error('Error unregistering workflow:', e);
-                    return false;
+                const webhookData = this.getWorkflowStaticData('node');
+                const webhookUrl = this.getNodeWebhookUrl('default');
+                if (webhookData.webhookId !== undefined) {
+                    const credentials = await this.getCredentials('agentBrainsIntegrationApi');
+                    const apiBase = `https://api.${getDomain(credentials)}`;
+                    try {
+                        await this.helpers.httpRequestWithAuthentication.call(
+                            this,
+                            'agentBrainsIntegrationApi',
+                            {
+                                method: 'DELETE',
+                                url: `${apiBase}/webhooks/${webhookData.webhookId}`,
+                                qs: {
+                                    webhookUrl: webhookUrl?.replace('/webhook-test/', '/webhook/'),
+                                },
+                            },
+                        );
+                    } catch (error) {
+                        LoggerProxy.error('Error deleting webhook:', error);
+                        return false;
+                    }
+                    delete webhookData.webhookId;
                 }
+                return true;
             },
         },
     };
@@ -90,7 +108,6 @@ export class IntegrationTrigger implements INodeType {
                 required: true,
             },
         ],
-        subtitle: '={{$parameter["jobName"]}}',
         description: 'Integrate your custom n8n workflow with the AgentBrains platform. Use this trigger to receive webhook calls from AgentBrains and start your flows. To create API credentials, sign up and generate an access token at https://agent-brains.com/system-integration and provide it via the AgentBrains credentials in n8n.',
         defaults: {
             name: 'AgentBrains Integration Trigger',
@@ -167,6 +184,19 @@ export class IntegrationTrigger implements INodeType {
             },
         ],
         usableAsTool: undefined,
+        codex: {
+            categories: ['Development'],
+            subcategories: {
+                Development: ['APIs'],
+            },
+            resources: {
+                primaryDocumentation: [
+                    {
+                        url: 'https://agent-brains.com/docs',
+                    },
+                ],
+            },
+        },
     };
 
     async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {

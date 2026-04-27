@@ -1,12 +1,16 @@
 #!/usr/bin/env node
 /**
- * patch-env.js — Replaces dist/nodes/constants.js with hardcoded values for the target environment.
+ * patch-env.js — Replaces dist/nodes/constants.js in every workspace package
+ * with hardcoded values for the target environment.
+ *
  * Usage: node scripts/patch-env.js <sandbox|staging>
  *
- * This runs AFTER `tsc` build and overwrites the compiled constants
- * so the published package contains zero runtime env lookups.
+ * Runs AFTER `npm run build` (which compiles each packages/* via tsc) and
+ * overwrites the compiled constants so the published tarballs contain zero
+ * runtime env lookups.
  */
 
+/* eslint-disable @typescript-eslint/no-var-requires */
 const fs = require('fs');
 const path = require('path');
 
@@ -43,7 +47,15 @@ exports.getDomain = function(credentials) {
 };
 `;
 
-const outFile = path.join(__dirname, '..', 'dist', 'nodes', 'constants.js');
-fs.writeFileSync(outFile, output, 'utf8');
+const PACKAGES = ['trigger', 'employee', 'knowledge-base', 'rag', 'synthetic-qa'];
 
-console.log(`✅ Patched constants.js → env=${env}, domain=${domain}`);
+for (const pkg of PACKAGES) {
+	const outFile = path.join(__dirname, '..', 'packages', pkg, 'dist', 'nodes', 'constants.js');
+	if (!fs.existsSync(path.dirname(outFile))) {
+		console.error(`patch-env: dist/nodes missing for ${pkg} — did you run \`npm run build\` first?`);
+		process.exit(1);
+	}
+	fs.writeFileSync(outFile, output, 'utf8');
+}
+
+console.log(`✅ Patched constants.js in ${PACKAGES.length} packages → env=${env}, domain=${domain}`);

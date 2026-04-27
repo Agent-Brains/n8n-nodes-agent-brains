@@ -1,4 +1,5 @@
 import {
+	NodeConnectionTypes,
 	type IDataObject,
 	type IExecuteFunctions,
 	type IHttpRequestMethods,
@@ -43,8 +44,8 @@ export class KnowledgeBase implements INodeType {
 		defaults: {
 			name: 'AgentBrains Knowledge Base',
 		},
-		inputs: ['main'],
-		outputs: ['main'],
+		inputs: [NodeConnectionTypes.Main],
+		outputs: [NodeConnectionTypes.Main],
 		credentials: [
 			{
 				name: 'agentBrainsIntegrationApi',
@@ -519,6 +520,19 @@ export class KnowledgeBase implements INodeType {
 
 		],
 		usableAsTool: true,
+		codex: {
+			categories: ['Development'],
+			subcategories: {
+				Development: ['APIs'],
+			},
+			resources: {
+				primaryDocumentation: [
+					{
+						url: 'https://agent-brains.com/docs',
+					},
+				],
+			},
+		},
 	};
 
 	methods = {

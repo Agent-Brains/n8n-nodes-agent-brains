@@ -1,9 +1,9 @@
 {
-	"node": "n8n-nodes-agent-brains.syntheticQa",
+	"node": "n8n-nodes-agent-brains.integrationTrigger",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
-	"categories": ["Utility", "Development", "AI"],
-	"description": "Run synthetic conversations and evaluate agent behavior with AgentBrains synthetic users.",
+	"categories": ["Utility", "Development"],
+	"description": "Integrate your custom n8n workflow with the AgentBrains platform.",
 	"resources": {
 		"credentialDocumentation": [
 			{

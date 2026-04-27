@@ -1,4 +1,5 @@
 import {
+	NodeConnectionTypes,
 	type IDataObject,
 	type IExecuteFunctions,
 	type ILoadOptionsFunctions,
@@ -21,9 +22,22 @@ export class AgentBrainsEmployee implements INodeType {
 		defaults: {
 			name: 'AgentBrains Employee',
 		},
-		inputs: ['main'],
-		outputs: ['main'],
+		inputs: [NodeConnectionTypes.Main],
+		outputs: [NodeConnectionTypes.Main],
 		usableAsTool: true,
+		codex: {
+			categories: ['Development'],
+			subcategories: {
+				Development: ['APIs'],
+			},
+			resources: {
+				primaryDocumentation: [
+					{
+						url: 'https://agent-brains.com/docs',
+					},
+				],
+			},
+		},
 		credentials: [
 			{
 				name: 'agentBrainsIntegrationApi',
