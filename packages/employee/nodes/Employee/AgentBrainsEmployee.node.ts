@@ -96,7 +96,9 @@ export class AgentBrainsEmployee implements INodeType {
 					items = responseData as IDataObject[];
 				} else if (responseData && typeof responseData === 'object') {
 					const itemObj = responseData as IDataObject;
-					if (Array.isArray(itemObj.data)) {
+					if (Array.isArray(itemObj.docs)) {
+						items = itemObj.docs as IDataObject[];
+					} else if (Array.isArray(itemObj.data)) {
 						items = itemObj.data as IDataObject[];
 					} else if (Array.isArray(itemObj.value)) {
 						items = itemObj.value as IDataObject[];
