@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-agent-brains-knowledge-base",
-	"version": "2.0.1",
+	"version": "2.0.2",
 	"description": "AgentBrains Knowledge Base node for n8n",
 	"license": "MIT",
 	"homepage": "https://github.com/Agent-Brains/n8n-nodes-agent-brains",
