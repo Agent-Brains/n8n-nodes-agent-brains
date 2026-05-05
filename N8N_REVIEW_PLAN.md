@@ -79,7 +79,7 @@ packages/shared/
 ### #1 — Sync GitHub & npm Provenance
 - **Requirement:** n8n requires community nodes to be published via GitHub Actions with npm provenance.
 - **Plan:** 
-  1. Update `.github/workflows/ci.yml` to actually run `npm publish` (via `npm run release:all`) when a tag is pushed.
+  1. Update `.github/workflows/publish.yml` to actually run `npm publish` (via `npm run release:all`) when a tag is pushed.
   2. Ensure `actions/setup-node` is configured with `registry-url: 'https://registry.npmjs.org'`.
   3. Pass `PROVENANCE_FLAG="--provenance"` and `NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}` to the release script.
   4. The workflow already has `permissions: { id-token: write, contents: write }` which is required for provenance.

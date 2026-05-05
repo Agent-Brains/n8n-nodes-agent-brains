@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-agent-brains-trigger",
-	"version": "2.0.0",
+	"version": "2.0.1",
 	"description": "AgentBrains Trigger node for n8n",
 	"license": "MIT",
 	"homepage": "https://github.com/Agent-Brains/n8n-nodes-agent-brains",
