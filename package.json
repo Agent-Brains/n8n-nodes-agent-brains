@@ -1,7 +1,7 @@
 {
 	"name": "n8n-nodes-agent-brains-monorepo",
 	"private": true,
-	"version": "2.0.5",
+	"version": "2.0.6",
 	"description": "Monorepo for AgentBrains n8n node packages. Each package under packages/* is published independently.",
 	"license": "MIT",
 	"keywords": [
