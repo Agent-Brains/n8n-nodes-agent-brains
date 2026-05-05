@@ -27,8 +27,9 @@ jobs:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
 
+      # Work around the broken npm bundled with Node 22.22.2 on GitHub runners.
       - name: Upgrade npm (Trusted Publishing requires 11.5.1+)
-        run: npm install -g npm@latest
+        run: npx -y npm@11 install -g npm@11
 
       - name: Install dependencies
         run: npm ci
