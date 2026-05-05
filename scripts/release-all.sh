@@ -30,7 +30,7 @@ node scripts/patch-env.js staging
 
 echo "📦 Publishing staging $BASE_VERSION across all workspaces..."
 for pkg in packages/*; do
-  if [ -d "$pkg" ]; then
+  if [ -d "$pkg" ] && [ -f "$pkg/package.json" ]; then
     echo "Publishing $pkg..."
     (cd "$pkg" && npm publish --access public ${PROVENANCE_FLAG})
   fi
@@ -47,7 +47,7 @@ node scripts/patch-env.js sandbox
 
 echo "📦 Publishing sandbox $DEV_VERSION across all workspaces..."
 for pkg in packages/*; do
-  if [ -d "$pkg" ]; then
+  if [ -d "$pkg" ] && [ -f "$pkg/package.json" ]; then
     echo "Publishing $pkg (dev)..."
     (cd "$pkg" && npm publish --access public --tag dev ${PROVENANCE_FLAG})
   fi
