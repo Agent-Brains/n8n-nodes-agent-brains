@@ -29,7 +29,12 @@ echo "🛠  Patching env → staging..."
 node scripts/patch-env.js staging
 
 echo "📦 Publishing staging $BASE_VERSION across all workspaces..."
-npm publish --workspaces --access public ${PROVENANCE_FLAG}
+for pkg in packages/*; do
+  if [ -d "$pkg" ]; then
+    echo "Publishing $pkg..."
+    (cd "$pkg" && npm publish --access public ${PROVENANCE_FLAG})
+  fi
+done
 
 # ── 2. Sandbox-dev publish (-dev suffix) ───────────────────────
 echo ""
@@ -41,7 +46,12 @@ npm run build
 node scripts/patch-env.js sandbox
 
 echo "📦 Publishing sandbox $DEV_VERSION across all workspaces..."
-npm publish --workspaces --access public --tag dev ${PROVENANCE_FLAG}
+for pkg in packages/*; do
+  if [ -d "$pkg" ]; then
+    echo "Publishing $pkg (dev)..."
+    (cd "$pkg" && npm publish --access public --tag dev ${PROVENANCE_FLAG})
+  fi
+done
 
 # Restore main version so the working tree isn't dirty.
 npm version "$BASE_VERSION" --workspaces --no-git-tag-version --allow-same-version
