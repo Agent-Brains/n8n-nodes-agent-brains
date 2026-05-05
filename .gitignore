@@ -2,10 +2,6 @@ dist
 node_modules
 .vscode/symbols.json
 
-# Synced from packages/shared/ by scripts/sync-shared.js (single source of truth)
-packages/*/credentials/AgentBrainsIntegrationApi.credentials.ts
-packages/*/icons/agentBrainsIntegration.svg
-packages/*/nodes/constants.ts
 # The canonicals in packages/shared/ MUST stay tracked
 !packages/shared/credentials/AgentBrainsIntegrationApi.credentials.ts
 !packages/shared/icons/agentBrainsIntegration.svg
