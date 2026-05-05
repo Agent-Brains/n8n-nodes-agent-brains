@@ -16,7 +16,8 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/Agent-Brains/n8n-nodes-agent-brains.git"
+		"url": "git+https://github.com/Agent-Brains/n8n-nodes-agent-brains.git",
+		"directory": "packages/synthetic-qa"
 	},
 	"scripts": {
 		"prebuild": "node ../../scripts/sync-shared.js",
