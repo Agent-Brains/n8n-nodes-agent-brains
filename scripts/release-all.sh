@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # release-all.sh — Build and publish every workspace package to npm.
-# Two phases: staging (main version) then sandbox (`-dev` suffix).
 #
 # Usage:
 #   npm run release:all
@@ -17,7 +16,6 @@ cd "$PROJECT_DIR"
 
 # Read base version from any one package (they're kept in sync).
 BASE_VERSION=$(node -p "require('./packages/trigger/package.json').version")
-DEV_VERSION="${BASE_VERSION}-dev"
 
 PROVENANCE_FLAG="${PROVENANCE_FLAG:-}"   # CI sets this to "--provenance"
 
@@ -36,25 +34,5 @@ for pkg in packages/*; do
   fi
 done
 
-# ── 2. Sandbox-dev publish (-dev suffix) ───────────────────────
 echo ""
-echo "🔨 Bumping all packages to $DEV_VERSION..."
-npm version "$DEV_VERSION" --workspaces --no-git-tag-version --allow-same-version
-
-echo "🚀 Rebuilding for sandbox..."
-npm run build
-node scripts/patch-env.js sandbox
-
-echo "📦 Publishing sandbox $DEV_VERSION across all workspaces..."
-for pkg in packages/*; do
-  if [ -d "$pkg" ] && [ -f "$pkg/package.json" ]; then
-    echo "Publishing $pkg (dev)..."
-    (cd "$pkg" && npm publish --access public --tag dev ${PROVENANCE_FLAG})
-  fi
-done
-
-# Restore main version so the working tree isn't dirty.
-npm version "$BASE_VERSION" --workspaces --no-git-tag-version --allow-same-version
-
-echo ""
-echo "✅ Done. Published $BASE_VERSION (staging) and $DEV_VERSION (sandbox-dev) for all 5 packages."
+echo "✅ Done. Published $BASE_VERSION for all 5 packages."

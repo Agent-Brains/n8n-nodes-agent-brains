@@ -1,11 +1,17 @@
 #!/usr/bin/env node
-/* eslint-disable @typescript-eslint/no-var-requires */
 const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const SHARED = path.join(ROOT, 'packages', 'shared');
 const PACKAGES = ['trigger', 'employee', 'knowledge-base', 'rag', 'synthetic-qa'];
+const ROOT_NODE_DIRS = [
+	['knowledge-base', 'KnowledgeBase'],
+	['synthetic-qa', 'SyntheticQa'],
+	['trigger', 'IntegrationTrigger'],
+	['rag', 'RAG'],
+	['employee', 'Employee'],
+];
 
 const FILES = [
 	'credentials/AgentBrainsIntegrationApi.credentials.ts',
@@ -23,6 +29,19 @@ function header(rel) {
 	].join('\n');
 }
 
+function copyDirRecursive(from, to) {
+	fs.mkdirSync(to, { recursive: true });
+	for (const entry of fs.readdirSync(from, { withFileTypes: true })) {
+		const fromPath = path.join(from, entry.name);
+		const toPath = path.join(to, entry.name);
+		if (entry.isDirectory()) {
+			copyDirRecursive(fromPath, toPath);
+		} else {
+			fs.copyFileSync(fromPath, toPath);
+		}
+	}
+}
+
 for (const pkg of PACKAGES) {
 	for (const rel of FILES) {
 		const from = path.join(SHARED, rel);
@@ -35,6 +54,31 @@ for (const pkg of PACKAGES) {
 			fs.copyFileSync(from, to);
 		}
 	}
+}
+
+const rootCredentialsDir = path.join(ROOT, 'credentials');
+fs.mkdirSync(rootCredentialsDir, { recursive: true });
+fs.copyFileSync(
+	path.join(SHARED, 'credentials', 'AgentBrainsIntegrationApi.credentials.ts'),
+	path.join(rootCredentialsDir, 'AgentBrainsIntegrationApi.credentials.ts'),
+);
+
+const rootIconsDir = path.join(ROOT, 'icons');
+fs.mkdirSync(rootIconsDir, { recursive: true });
+fs.copyFileSync(
+	path.join(SHARED, 'icons', 'agentBrainsIntegration.svg'),
+	path.join(rootIconsDir, 'agentBrainsIntegration.svg'),
+);
+
+const rootNodesDir = path.join(ROOT, 'nodes');
+fs.mkdirSync(rootNodesDir, { recursive: true });
+fs.copyFileSync(path.join(SHARED, 'nodes', 'constants.ts'), path.join(rootNodesDir, 'constants.ts'));
+
+for (const [pkg, dirName] of ROOT_NODE_DIRS) {
+	const from = path.join(ROOT, 'packages', pkg, 'nodes', dirName);
+	const to = path.join(rootNodesDir, dirName);
+	fs.rmSync(to, { recursive: true, force: true });
+	copyDirRecursive(from, to);
 }
 
 console.log(`synced ${FILES.length} shared files to ${PACKAGES.length} packages`);

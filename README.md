@@ -8,6 +8,15 @@ AgentBrains helps businesses build, validate, and manage AI employees with curat
 
 Follow the n8n community nodes installation guide: https://docs.n8n.io/integrations/community-nodes/installation/
 
+## Maintenance
+
+- Shared credentials, icons, and constants live in `packages/shared` and are copied into each package by `scripts/sync-shared.js`.
+- Run `npm run sync` after changing anything in `packages/shared` so package-local copies stay aligned.
+- The same sync step also refreshes the root-level `nodes/`, `credentials/`, and `icons/` folders used by GitHub-based submission checks.
+- Keep those root-level folders committed because external validators may request paths such as `nodes/KnowledgeBase` directly from the repository root.
+- Use `npm run release:all` to publish the main package versions only; the old `-dev` publish flow has been removed.
+- Create plain numeric git tags such as `2.2.0`, not `v2.2.0`, so npm version links resolve correctly.
+
 ## Trigger Node: AgentBrains Integration Trigger
 
 - Starts your n8n workflow from AgentBrains via production webhook.
@@ -62,4 +71,3 @@ Learn more: https://agent-brains.com/
 
 - n8n community nodes documentation: https://docs.n8n.io/integrations/#community-nodes
 - AgentBrains system integration: https://agent-brains.com/system-integration
-

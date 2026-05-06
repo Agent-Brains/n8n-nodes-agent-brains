@@ -1,0 +1,19 @@
+{
+	"node": "n8n-nodes-agent-brains.agentBrainsRag",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Utility", "Development"],
+	"description": "Retrieve information from AgentBrains RAG",
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://agent-brains.com/system-integration"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://agent-brains.com/system-integration"
+			}
+		]
+	}
+}
