@@ -10,11 +10,13 @@ Follow the n8n community nodes installation guide: https://docs.n8n.io/integrati
 
 ## Maintenance
 
-- Shared credentials, icons, and constants live in `packages/shared` and are copied into each package by `scripts/sync-shared.js`.
+- The repo now has two publishable packages: `packages/platform` for action nodes and `packages/trigger` for the webhook trigger.
+- Shared credentials, icons, and constants live in `packages/shared` and are copied into the publishable packages by `scripts/sync-shared.js`.
 - Run `npm run sync` after changing anything in `packages/shared` so package-local copies stay aligned.
 - The same sync step also refreshes the root-level `nodes/`, `credentials/`, and `icons/` folders used by GitHub-based submission checks.
 - Keep those root-level folders committed because external validators may request paths such as `nodes/KnowledgeBase` directly from the repository root.
-- Use `npm run release:all` to publish the main package versions only; the old `-dev` publish flow has been removed.
+- `packages/platform` bundles the Knowledge Base, Employee, RAG, and Synthetic QA nodes into one installable npm package.
+- Use `npm run release:all` to publish only `packages/platform` and `packages/trigger`; the old `-dev` publish flow has been removed.
 - Create plain numeric git tags such as `2.2.0`, not `v2.2.0`, so npm version links resolve correctly.
 
 ## Trigger Node: AgentBrains Integration Trigger

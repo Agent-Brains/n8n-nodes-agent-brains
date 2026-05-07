@@ -10,7 +10,6 @@
  * runtime env lookups.
  */
 
-/* eslint-disable @typescript-eslint/no-var-requires */
 const fs = require('fs');
 const path = require('path');
 
@@ -47,7 +46,7 @@ exports.getDomain = function(credentials) {
 };
 `;
 
-const PACKAGES = ['trigger', 'employee', 'knowledge-base', 'rag', 'synthetic-qa'];
+const PACKAGES = ['platform', 'trigger'];
 
 for (const pkg of PACKAGES) {
 	const outFile = path.join(__dirname, '..', 'packages', pkg, 'dist', 'nodes', 'constants.js');

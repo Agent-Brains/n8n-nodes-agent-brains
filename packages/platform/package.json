@@ -1,13 +1,16 @@
 {
-	"name": "n8n-nodes-agent-brains-synthetic-qa",
-	"version": "2.2.0",
-	"description": "AgentBrains Synthetic QA node for n8n",
+	"name": "n8n-nodes-agent-brains",
+	"version": "3.0.0",
+	"description": "AgentBrains platform nodes for n8n",
 	"license": "MIT",
 	"homepage": "https://github.com/Agent-Brains/n8n-nodes-agent-brains",
 	"keywords": [
 		"n8n-community-node-package",
 		"n8n",
 		"agent-brains",
+		"knowledge-base",
+		"employee",
+		"rag",
 		"synthetic-qa"
 	],
 	"author": {
@@ -17,7 +20,7 @@
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/Agent-Brains/n8n-nodes-agent-brains.git",
-		"directory": "packages/synthetic-qa"
+		"directory": "packages/platform"
 	},
 	"scripts": {
 		"prebuild": "node ../../scripts/sync-shared.js",
@@ -38,6 +41,9 @@
 			"dist/credentials/AgentBrainsIntegrationApi.credentials.js"
 		],
 		"nodes": [
+			"dist/nodes/KnowledgeBase/KnowledgeBase.node.js",
+			"dist/nodes/Employee/AgentBrainsEmployee.node.js",
+			"dist/nodes/RAG/AgentBrainsRag.node.js",
 			"dist/nodes/SyntheticQa/SyntheticQa.node.js"
 		]
 	},
