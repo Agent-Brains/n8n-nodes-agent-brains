@@ -4,13 +4,13 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const SHARED = path.join(ROOT, 'packages', 'shared');
-const PACKAGES = ['trigger', 'employee', 'knowledge-base', 'rag', 'synthetic-qa'];
+const PACKAGES = ['platform', 'trigger'];
 const ROOT_NODE_DIRS = [
-	['knowledge-base', 'KnowledgeBase'],
-	['synthetic-qa', 'SyntheticQa'],
+	['platform', 'KnowledgeBase'],
+	['platform', 'Employee'],
+	['platform', 'RAG'],
+	['platform', 'SyntheticQa'],
 	['trigger', 'IntegrationTrigger'],
-	['rag', 'RAG'],
-	['employee', 'Employee'],
 ];
 
 const FILES = [

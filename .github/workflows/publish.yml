@@ -50,7 +50,4 @@ jobs:
             Published 5 packages to npm:
 
             - [`n8n-nodes-agent-brains-trigger@${{ github.ref_name }}`](https://www.npmjs.com/package/n8n-nodes-agent-brains-trigger/v/${{ github.ref_name }})
-            - [`n8n-nodes-agent-brains-employee@${{ github.ref_name }}`](https://www.npmjs.com/package/n8n-nodes-agent-brains-employee/v/${{ github.ref_name }})
-            - [`n8n-nodes-agent-brains-knowledge-base@${{ github.ref_name }}`](https://www.npmjs.com/package/n8n-nodes-agent-brains-knowledge-base/v/${{ github.ref_name }})
-            - [`n8n-nodes-agent-brains-rag@${{ github.ref_name }}`](https://www.npmjs.com/package/n8n-nodes-agent-brains-rag/v/${{ github.ref_name }})
-            - [`n8n-nodes-agent-brains-synthetic-qa@${{ github.ref_name }}`](https://www.npmjs.com/package/n8n-nodes-agent-brains-synthetic-qa/v/${{ github.ref_name }})
+            - [`n8n-nodes-agent-brains@${{ github.ref_name }}`](https://www.npmjs.com/package/n8n-nodes-agent-brains/v/${{ github.ref_name }})
