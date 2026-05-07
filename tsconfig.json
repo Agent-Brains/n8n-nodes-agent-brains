@@ -1,0 +1,8 @@
+{
+	"extends": "./tsconfig.base.json",
+	"compilerOptions": {
+		"outDir": "./dist/",
+		"tsBuildInfoFile": "./.tsbuildinfo"
+	},
+	"include": ["credentials/**/*", "nodes/**/*", "nodes/**/*.json", "lib/**/*"]
+}

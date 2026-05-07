@@ -1,9 +1,9 @@
 {
-	"name": "n8n-nodes-agent-brains-monorepo",
-	"private": true,
-	"version": "3.0.0",
-	"description": "Monorepo for AgentBrains n8n node packages. Each package under packages/* is published independently.",
+	"name": "n8n-nodes-agent-brains",
+	"version": "3.1.0",
+	"description": "AgentBrains nodes for n8n",
 	"license": "MIT",
+	"homepage": "https://github.com/Agent-Brains/n8n-nodes-agent-brains",
 	"keywords": [
 		"n8n-community-node-package",
 		"n8n",
@@ -29,26 +29,39 @@
 		"url": "git+https://github.com/Agent-Brains/n8n-nodes-agent-brains.git"
 	},
 	"scripts": {
-		"postinstall": "node scripts/sync-shared.js",
-		"sync": "node scripts/sync-shared.js",
-		"build": "npm run build --workspaces --if-present",
-		"lint": "npm run lint --workspaces --if-present",
-		"lint:fix": "npm run lint:fix --workspaces --if-present",
-		"version:bump": "npm version --workspaces",
-		"publish:all": "npm run build && npm publish --workspaces --access public",
-		"publish:dry": "npm run build && npm publish --workspaces --access public --dry-run",
+		"clean": "rm -rf dist .tsbuildinfo",
+		"build": "npm run clean && tsc && node scripts/copy-assets.js",
+		"build:watch": "tsc --watch",
+		"dev": "n8n-node dev",
+		"lint": "eslint .",
+		"lint:fix": "eslint . --fix",
+		"publish:dry": "npm run build && npm publish --access public --dry-run",
 		"release:all": "bash scripts/release-all.sh"
 	},
-	"workspaces": [
-		"packages/*"
+	"files": [
+		"dist"
 	],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"strict": true,
+		"credentials": [
+			"dist/credentials/AgentBrainsIntegrationApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/AgentBrains/AgentBrains.node.js",
+			"dist/nodes/IntegrationTrigger/IntegrationTrigger.node.js"
+		]
+	},
 	"devDependencies": {
 		"@n8n/node-cli": "0.17.0",
 		"eslint": "9.32.0",
-		"n8n-workflow": "2.15.0",
 		"express": "^5.1.0",
+		"n8n-workflow": "2.15.0",
 		"prettier": "3.6.2",
 		"release-it": "^19.0.4",
 		"typescript": "5.9.2"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "*"
 	}
 }

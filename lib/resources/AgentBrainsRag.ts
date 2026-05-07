@@ -7,7 +7,7 @@ import {
     type ILoadOptionsFunctions,
     type INodePropertyOptions,
 } from 'n8n-workflow';
-import { getDomain } from '../constants';
+import { getDomain } from '../../nodes/constants';
 
 const GLOBAL_INDEX_OPTION: INodePropertyOptions = { name: 'Core Text Index (All Documents)', value: 'general_helper_documents' };
 
@@ -84,7 +84,7 @@ export class AgentBrainsRag implements INodeType {
                         operation: ['text'],
                     },
                 },
-                // eslint-disable-next-line n8n-nodes-base/node-param-default-wrong-for-options
+                 
                 default: 'general_helper_documents',
                 required: true,
                 description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',

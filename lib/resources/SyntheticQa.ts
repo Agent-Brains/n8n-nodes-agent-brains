@@ -13,7 +13,7 @@ import {
 	SYNTHETIC_QA_MAX_WAIT_SECONDS,
 	SYNTHETIC_QA_POLL_INTERVAL_SECONDS,
 	getDomain,
-} from '../constants';
+} from '../../nodes/constants';
 
 interface IExternalSyntheticUser {
 	id: string;

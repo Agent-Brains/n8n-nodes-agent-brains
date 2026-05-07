@@ -1,7 +1,4 @@
 #!/usr/bin/env node
-/* eslint-disable @typescript-eslint/no-var-requires */
-// Run from a package directory. Copies *.node.json files and the icons/ folder
-// into dist/ so the published tarball contains everything n8n loads at runtime.
 const fs = require('fs');
 const path = require('path');
 

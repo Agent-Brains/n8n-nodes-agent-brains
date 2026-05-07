@@ -9,9 +9,7 @@ import {
 	type INodeType,
 	type INodeTypeDescription,
 } from 'n8n-workflow';
-import { getDomain } from '../constants';
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { getDomain } from '../../nodes/constants';
 
 enum Resource {
 	Entity = 'entity',
@@ -53,7 +51,7 @@ export class KnowledgeBase implements INodeType {
 			},
 		],
 		properties: [
-			// eslint-disable-next-line n8n-nodes-base/node-param-default-missing
+			 
 			{
 				displayName: 'Resource',
 				name: 'resource',
@@ -61,7 +59,7 @@ export class KnowledgeBase implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
-						// eslint-disable-next-line
+						 
 						name: 'Documents',
 						value: Resource.Entity,
 						description: 'Individual items like documents, products, or services stored in the knowledge base',
@@ -90,7 +88,7 @@ export class KnowledgeBase implements INodeType {
 				],
 				default: Resource.Entity,
 			},
-			// eslint-disable-next-line n8n-nodes-base/node-param-default-missing
+			 
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -135,7 +133,7 @@ export class KnowledgeBase implements INodeType {
 				],
 				default: Operation.GetAll,
 			},
-			// eslint-disable-next-line n8n-nodes-base/node-param-default-missing
+			 
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -168,7 +166,7 @@ export class KnowledgeBase implements INodeType {
 				],
 				default: Operation.GetAll,
 			},
-			// eslint-disable-next-line n8n-nodes-base/node-param-default-missing
+			 
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -189,7 +187,7 @@ export class KnowledgeBase implements INodeType {
 				],
 				default: Operation.GetAll,
 			},
-			// eslint-disable-next-line n8n-nodes-base/node-param-default-missing
+			 
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -216,7 +214,7 @@ export class KnowledgeBase implements INodeType {
 				],
 				default: Operation.GetAll,
 			},
-			// eslint-disable-next-line n8n-nodes-base/node-param-default-missing
+			 
 			{
 				displayName: 'Operation',
 				name: 'operation',

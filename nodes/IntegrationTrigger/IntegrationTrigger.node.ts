@@ -6,6 +6,7 @@ import {
 	type IWebhookResponseData,
 	LoggerProxy,
 	NodeConnectionTypes,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 import { getDomain } from '../constants';
@@ -62,7 +63,7 @@ export class IntegrationTrigger implements INodeType {
                 } catch (e) {
                     const error = e as { httpCode?: number; response?: { status?: number }; statusCode?: number };
                     if (error.httpCode === 409 || error.response?.status === 409 || error.statusCode === 409) {
-                        throw new Error('Webhook url is already used, please remove and add the trigger node again');
+                        throw new NodeOperationError(this.getNode(), 'Webhook url is already used, please remove and add the trigger node again');
                     }
                     LoggerProxy.error('Error registering workflow:', e);
                     return false;

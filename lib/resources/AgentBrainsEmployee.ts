@@ -8,7 +8,7 @@ import {
 	type INodeType,
 	type INodeTypeDescription,
 } from 'n8n-workflow';
-import { getDomain } from '../constants';
+import { getDomain } from '../../nodes/constants';
 
 export class AgentBrainsEmployee implements INodeType {
 	description: INodeTypeDescription = {

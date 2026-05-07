@@ -1,8 +1,4 @@
 dist
 node_modules
+.tsbuildinfo
 .vscode/symbols.json
-
-# The canonicals in packages/shared/ MUST stay tracked
-!packages/shared/credentials/AgentBrainsIntegrationApi.credentials.ts
-!packages/shared/icons/agentBrainsIntegration.svg
-!packages/shared/nodes/constants.ts

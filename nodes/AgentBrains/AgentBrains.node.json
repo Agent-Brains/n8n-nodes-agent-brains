@@ -1,9 +1,9 @@
 {
-	"node": "n8n-nodes-agent-brains.agentBrainsEmployee",
+	"node": "n8n-nodes-agent-brains.agentBrains",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
 	"categories": ["Utility", "Development"],
-	"description": "Retrieve employee configuration from AgentBrains.",
+	"description": "Interact with AgentBrains Knowledge Base, Employee, RAG, and Synthetic QA functionality.",
 	"resources": {
 		"credentialDocumentation": [
 			{
