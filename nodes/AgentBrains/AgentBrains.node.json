@@ -3,7 +3,6 @@
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
 	"categories": ["Utility", "Development"],
-	"description": "Interact with AgentBrains Knowledge Base, Employee, RAG, and Synthetic QA functionality.",
 	"resources": {
 		"credentialDocumentation": [
 			{

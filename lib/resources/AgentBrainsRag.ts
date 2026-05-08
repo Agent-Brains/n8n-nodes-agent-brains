@@ -1,4 +1,5 @@
 import {
+    NodeApiError,
     NodeConnectionTypes,
     type IExecuteFunctions,
     type INodeExecutionData,
@@ -6,6 +7,7 @@ import {
     type INodeTypeDescription,
     type ILoadOptionsFunctions,
     type INodePropertyOptions,
+    type JsonObject,
 } from 'n8n-workflow';
 import { getDomain } from '../../nodes/constants';
 
@@ -254,7 +256,7 @@ export class AgentBrainsRag implements INodeType {
                     });
                     continue;
                 }
-                throw error;
+                throw new NodeApiError(this.getNode(), error as JsonObject);
             }
         }
 

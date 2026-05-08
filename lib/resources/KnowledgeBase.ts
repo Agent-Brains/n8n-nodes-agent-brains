@@ -1,4 +1,5 @@
 import {
+	NodeApiError,
 	NodeConnectionTypes,
 	type IDataObject,
 	type IExecuteFunctions,
@@ -8,6 +9,7 @@ import {
 	type INodePropertyOptions,
 	type INodeType,
 	type INodeTypeDescription,
+	type JsonObject,
 } from 'n8n-workflow';
 import { getDomain } from '../../nodes/constants';
 
@@ -60,7 +62,7 @@ export class KnowledgeBase implements INodeType {
 				options: [
 					{
 						 
-						name: 'Documents',
+						name: 'Document',
 						value: Resource.Entity,
 						description: 'Individual items like documents, products, or services stored in the knowledge base',
 					},
@@ -71,12 +73,12 @@ export class KnowledgeBase implements INodeType {
 					},
 					{
 
-						name: 'Images',
+						name: 'Image',
 						value: Resource.Attachment,
 						description: 'Files and media attached to entities',
 					},
 					{
-						name: 'Relationship Types',
+						name: 'Relationship Type',
 						value: Resource.RelationshipType,
 						description: 'Types of relationships that can exist between entities',
 					},
@@ -704,7 +706,7 @@ export class KnowledgeBase implements INodeType {
 					returnData.push({ json: { error: error.message } });
 					continue;
 				}
-				throw error;
+				throw new NodeApiError(this.getNode(), error as JsonObject);
 			}
 		}
 

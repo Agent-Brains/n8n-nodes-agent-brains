@@ -1,4 +1,5 @@
 import {
+	NodeApiError,
 	NodeConnectionTypes,
 	type IDataObject,
 	type IExecuteFunctions,
@@ -7,6 +8,7 @@ import {
 	type INodePropertyOptions,
 	type INodeType,
 	type INodeTypeDescription,
+	type JsonObject,
 } from 'n8n-workflow';
 import { getDomain } from '../../nodes/constants';
 
@@ -151,7 +153,7 @@ export class AgentBrainsEmployee implements INodeType {
 					returnData.push({ json: { error: error.message } });
 					continue;
 				}
-				throw error;
+				throw new NodeApiError(this.getNode(), error as JsonObject);
 			}
 		}
 
